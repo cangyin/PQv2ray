@@ -50,3 +50,8 @@ class MyTrie():
         for letter in root.keys():
             l.append( letter + self.path_until_fork(root[letter]) )
         return l
+
+
+def common_prefixes(l :list) -> list:
+    return MyTrie(*l).common_prefixes()
+

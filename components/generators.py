@@ -1,4 +1,4 @@
-from components.mytrie import MyTrie
+from components.mytrie import common_prefixes
 import json
 from copy import deepcopy
 from .utils import *
@@ -303,7 +303,7 @@ def generate_qv2ray_balancer_config(
     result['outbounds'] = outbounds
     # common prefixes of tags in selector
     if config['v2ray']['selector_use_prefixes']:
-        selector = MyTrie(*selector).common_prefixes()
+        selector = common_prefixes(selector)
 
     result['routing']['balancers'][0]['selector'] = selector
 
