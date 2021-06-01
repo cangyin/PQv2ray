@@ -94,6 +94,7 @@ class Qv2rayBalancerForm(QDialog):
         ui = self.ui
         file_name = QFileDialog.getOpenFileName(self, '选择由 Qv2ray 导出的路由方案', '.', '.JSON 文件 (*.json);; 任何文件 (*.*)')[0]
         if file_name:
+            file_name = relative_path(file_name)
             ui.editQvExportedRouteSettings.setText(file_name)
 
     @pyqtSlot(str)

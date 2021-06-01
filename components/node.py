@@ -11,8 +11,7 @@ _node_repr_format = "[{node.group}] {node.name}"
 
 class Node():
 
-    def __init__(self, id='', name='', group='', group_id='', fmt=_node_repr_format):
-        self.set_default_format(fmt)
+    def __init__(self, id='', name='', group='', group_id=''):
 
         self.id = id  # e.g. connection_id
         self.name = name  # e.g. diaplay name of connection
@@ -25,7 +24,8 @@ class Node():
         # self.address = 'proxy.google.com' # remote address
         # self.port = 11325 # remote port
 
-    def set_default_format(self, fmt: str):
+    @staticmethod
+    def set_default_format(fmt: str):
         global _node_repr_format
         _node_repr_format = fmt
 

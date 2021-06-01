@@ -120,6 +120,7 @@ class Qv2rayMultiPortForm(QDialog):
         ui = self.ui
         file_name = QFileDialog.getOpenFileName(self, '选择由 SwitchyOmega 插件导出的备份文件', '.', '.bak (*.bak);; 任何文件 (*.*)')[0]
         if file_name:
+            file_name = relative_path(file_name)
             ui.editSwFile.setText(file_name)
 
     @pyqtSlot(int)

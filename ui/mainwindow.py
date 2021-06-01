@@ -121,7 +121,6 @@ class MainWindow(QMainWindow):
                 name=gen.get_display_name(connection_id),
                 group=group_name,
                 group_id=group_id,
-                fmt=self.config['ui']['node_repr_format']
             ))
         self.model_left.resetNodes(nodes)
 
@@ -130,9 +129,8 @@ class MainWindow(QMainWindow):
         # left
         self.populateNodeList()
         # right
+        Node.set_default_format(self.config['ui']['node_repr_format'])
         nodes_right = self.model_right.getNodes()
-        for node in nodes_right:
-            node.set_default_format(self.config['ui']['node_repr_format'])
         self.model_right.resetNodes(nodes_right)
 
 
@@ -282,6 +280,7 @@ class MainWindow(QMainWindow):
         ui = self.ui
         qv2ray_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 文件夹', self.config['qv2ray']['folder'])
         if qv2ray_folder:
+            qv2ray_folder = relative_path(qv2ray_folder)
             ui.editQvFolder.setText(qv2ray_folder)
             if self.checkQv2rayFolderUi():
                 self.reloadQv2rayConfigs()

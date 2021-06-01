@@ -99,6 +99,15 @@ def kill_process(name):
     # TODO
     pass
 
+def relative_path(_path :str) -> str:
+    # TODO: test on linux
+    curdirve = path.splitdrive(path.realpath('.'))[0].upper()
+    tardrive = path.splitdrive(_path)[0].upper()
+    if curdirve == tardrive:
+        return path.relpath(_path)
+    else:
+        return _path
+
 
 if __name__ == '__main__':
 
@@ -123,3 +132,7 @@ if __name__ == '__main__':
         'node.group': 'group\"123',
     })
     print(o)
+
+    print(
+        relative_path('C:/x/y/z')
+    )

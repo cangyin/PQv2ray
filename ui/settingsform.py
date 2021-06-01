@@ -208,6 +208,7 @@ class SettingsForm(QDialog):
         ui = self.ui
         qv2ray_config_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 配置文件夹', self.parent().getQv2rayConfigFolder())
         if qv2ray_config_folder:
+            qv2ray_config_folder = relative_path(qv2ray_config_folder)
             if self.parent().checkQv2rayConfigFolder(qv2ray_config_folder):
                 ui.editQvconfigFolder.setText(qv2ray_config_folder)
             else:
@@ -219,24 +220,28 @@ class SettingsForm(QDialog):
     def on_btnBrwsMappingReportTemplPath_clicked(self):
         file_name = QFileDialog.getOpenFileName(self, '选择用于导出端口映射信息的模板文件', 'templates', 'JSON 文件 (*.json);; 任何文件 (*.*)')[0]
         if file_name:
+            file_name = relative_path(file_name)
             self.ui.editMappingReportTemplatePath.setText(file_name)
 
     @pyqtSlot()
     def on_btnBrwsMappingReportResultPath_clicked(self):
         file_name = QFileDialog.getSaveFileName(self, '选择端口映射信息的导出路径', 'results', 'JSON 文件 (*.json);; 任何文件 (*.*)')[0]
         if file_name:
+            file_name = relative_path(file_name)
             self.ui.editMappingReportResultPath.setText(file_name)
 
     @pyqtSlot()
     def on_btnBrwsQvResultPath_clicked(self):
         file_name = QFileDialog.getSaveFileName(self, '选择生成 Qv2ray 复杂配置文件的路径', 'results', 'JSON 文件 (*.json);; 任何文件 (*.*)')[0]
         if file_name:
+            file_name = relative_path(file_name)
             self.ui.editQvComplexConfigResultPath.setText(file_name)
 
     @pyqtSlot()
     def on_btnBrwsSoResultPath_clicked(self):
         file_name = QFileDialog.getSaveFileName(self, '选择生成 SwitchyOmega 配置文件的路径', 'results', 'BAK 后缀的文件 (*.bak);; 任何文件 (*.*)')[0]
         if file_name:
+            file_name = relative_path(file_name)
             self.ui.editSoResultPath.setText(file_name)
 
     @pyqtSlot()
