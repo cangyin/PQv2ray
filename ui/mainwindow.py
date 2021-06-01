@@ -14,7 +14,7 @@ from ui.qv2ray_multi_port import *
 from ui.settings import *
 
 from components import RunOnce, Node, NodeListModel
-from components.utils import *
+from components.config import load_config
 from components import generators as gen
 
 from .qv2raybalancerform import *
@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.config = load_json('config.json')
+        self.config = load_config('config.json')
         
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
