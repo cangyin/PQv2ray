@@ -1,0 +1,13 @@
+{
+    "QV2RAY_OUTBOUND_METADATA": {},
+    "mux": {},
+    "protocol": "blackhole",
+    "sendThrough": "0.0.0.0",
+    "settings": {
+        "response": {
+            "type": "none"
+        }
+    },
+    "streamSettings": {},
+    "tag": "block"
+}

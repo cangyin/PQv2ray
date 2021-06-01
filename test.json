@@ -1,0 +1,220 @@
+{
+    "inbounds": [
+        {
+            "allocate": {
+                "concurrency": null,
+                "refresh": null,
+                "strategy": "always"
+            },
+            "listen": "127.0.0.1",
+            "port": 1083,
+            "protocol": "http",
+            "settings": {
+                "allowTransparent": null,
+                "timeout": null,
+                "userLevel": null
+            },
+            "sniffing": {
+                "destOverride": null,
+                "enabled": false
+            },
+            "streamSettings": {},
+            "tag": "http-in"
+        },
+        {
+            "allocate": {
+                "concurrency": null,
+                "refresh": null,
+                "strategy": "always"
+            },
+            "listen": "127.0.0.1",
+            "port": 1082,
+            "protocol": "socks",
+            "settings": {
+                "auth": "noauth",
+                "ip": "127.0.0.1",
+                "udp": true,
+                "userLevel": 0
+            },
+            "sniffing": {
+                "destOverride": null,
+                "enabled": false
+            },
+            "streamSettings": {},
+            "tag": "socks-in"
+        }
+    ],
+    "outbounds": [
+        {
+            "QV2RAY_OUTBOUND_METADATA": {},
+            "mux": {},
+            "protocol": "blackhole",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "response": {
+                    "type": "none"
+                }
+            },
+            "streamSettings": {},
+            "tag": "block"
+        },
+        {
+            "QV2RAY_OUTBOUND_METADATA": {
+                "connectionId": "hlrlfiazzyzl",
+                "displayName": "[Default Group] 网易云音乐解锁",
+                "metaType": 1
+            }
+        },
+        {
+            "QV2RAY_OUTBOUND_METADATA": {
+                "connectionId": "edsrtudhgdvo",
+                "displayName": "[Default Group] 网易云音乐解锁2",
+                "metaType": 1
+            }
+        },
+        {
+            "QV2RAY_OUTBOUND_METADATA": {
+                "connectionId": "mmhirnihmktl",
+                "displayName": "[Default Group] N/A/N/A:0-hlvqd",
+                "metaType": 1
+            }
+        },
+        {
+            "QV2RAY_OUTBOUND_METADATA": {},
+            "mux": {},
+            "protocol": "freedom",
+            "sendThrough": "0.0.0.0",
+            "settings": {
+                "domainStrategy": "AsIs",
+                "redirect": "",
+                "userLevel": 0
+            },
+            "streamSettings": {},
+            "tag": "direct"
+        }
+    ],
+    "routing": {
+        "balancers": [
+            {
+                "selector": [
+                    "[] block",
+                    "[Default Group] 网易云音乐解锁",
+                    "[Default Group] 网易云音乐解锁2",
+                    "[Default Group] N/A/N/A:0-hlvqd"
+                ],
+                "tag": "balancer"
+            }
+        ],
+        "domainStrategy": "",
+        "rules": [
+            {
+                "QV2RAY_RULE_ENABLED": true,
+                "QV2RAY_RULE_TAG": "direct-ip",
+                "type": "field",
+                "inboundTag": [
+                    "http-in",
+                    "socks-in"
+                ],
+                "ip": [
+                    "geoip:cn",
+                    "210.45.240.105",
+                    "3.3.3.3",
+                    "37.220.37.186"
+                ],
+                "outboundTag": "direct"
+            },
+            {
+                "QV2RAY_RULE_ENABLED": true,
+                "QV2RAY_RULE_TAG": "direct-domain",
+                "type": "field",
+                "inboundTag": [
+                    "http-in",
+                    "socks-in"
+                ],
+                "domain": [
+                    "geosite:cn",
+                    "domain:kaoshangyan.com",
+                    "domain:lunwenhz.com",
+                    "domain:zhifoukeji.com",
+                    "domain:aliyundrive.com",
+                    "domain:xueyinonline.com",
+                    "domain:ichunqiu.com",
+                    "domain:mahua-kb.com",
+                    "domain:dgzhuorui.com",
+                    "domain:xiaoshuodaquan.com",
+                    "domain:apple.com",
+                    "domain:12999.com",
+                    "domain:xbiquge.cc",
+                    "domain:pediy.com",
+                    "domain:520xiazai.com",
+                    "domain:gzjkw.net",
+                    "domain:wxbit.com",
+                    "doamin:espressif.com",
+                    "domain:ai-thinker.com",
+                    "domain:openedv.com",
+                    "domain:zhuolin.wang",
+                    "domain:xitongcheng.com",
+                    "domain:ygdy8.net",
+                    "domain:2345pc.com",
+                    "domain:2345hp.com",
+                    "domain:xitongtiandi.net",
+                    "domain:360so.me",
+                    "domain:fabiaoqing.com",
+                    "domain:pic.bdbdtv.com",
+                    "domain:xianliao.me",
+                    "domain:yilans.net",
+                    "domain:jxtvsb.com",
+                    "domain:mdict.org",
+                    "domain:msftconnecttest.com",
+                    "domain:tianyaui.com",
+                    "domain:yhdm.tv",
+                    "domain:doc88.com",
+                    "domain:cskaoyan.com",
+                    "domain:dlili.tv"
+                ],
+                "outboundTag": "direct"
+            },
+            {
+                "QV2RAY_RULE_ENABLED": true,
+                "QV2RAY_RULE_TAG": "block-domain",
+                "type": "field",
+                "inboundTag": [
+                    "http-in",
+                    "socks-in"
+                ],
+                "domain": [
+                    "domain:account.sogou.com",
+                    "domain:input.shouji.sogou.com",
+                    "domain:browser.qq.com"
+                ],
+                "outboundTag": "block"
+            },
+            {
+                "QV2RAY_RULE_ENABLED": true,
+                "QV2RAY_RULE_TAG": "proxy-ip",
+                "type": "field",
+                "inboundTag": [
+                    "http-in",
+                    "socks-in"
+                ],
+                "ip": [
+                    "117.131.104.7"
+                ],
+                "balancerTag": "balancer"
+            },
+            {
+                "QV2RAY_RULE_ENABLED": true,
+                "QV2RAY_RULE_TAG": "proxy-domain",
+                "type": "field",
+                "inboundTag": [
+                    "http-in",
+                    "socks-in"
+                ],
+                "domain": [
+                    "geosite:geolocation-!cn"
+                ],
+                "balancerTag": "balancer"
+            }
+        ]
+    }
+}

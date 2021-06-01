@@ -1,0 +1,168 @@
+QWidget{
+    font-family: "<application_font_family>";
+    font-size: <application_font_size>pt;
+}
+QLabel{
+    text-align: right;
+}
+QComboBox, QLineEdit, QSpinBox{
+    padding: 2px 4px;
+}
+QGroupBox {
+    border: 1px solid gray;
+    border-radius: 5px;
+    margin-top: 1.5ex;
+    font-weight: 500;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top center; /* position at the top center */
+    padding: 0 4px;
+    /* border-left: 2px solid #93c9cc;
+    border-right: 2px solid #93c9cc; */
+}
+#groupBoxBtns, #groupBoxBlockRules {
+    border: none;
+}
+QGroupBox#groupBoxHelp{
+    border: 1px dotted gray;
+}
+#labHint, #labHelp {
+    padding: 3ex 0 0 0;
+    color: #1e1e1e;
+}
+#labHintDragRules {
+    font-size: 9pt;
+}
+#labThanksQv2ray {
+    font-family: 'consolas';
+    font-size: 32pt;
+}
+
+#tabWidgetSettings QLineEdit, #Qv2rayBalancerForm QLineEdit, #Qv2rayMultiPortForm QLineEdit {
+    font-family: consolas;
+    font-size: 9pt;
+    color: #3e3e3e;
+    border: none;
+    /* border-radius: 5px; */
+    border-bottom: 2px solid #93c9cc;
+}
+#Qv2rayBalancerForm QLineEdit, #Qv2rayMultiPortForm QLineEdit {
+    background-color: transparent;
+}
+#Qv2rayBalancerForm QLineEdit::disabled, #Qv2rayMultiPortForm QLineEdit::disabled {
+    border: none;
+    border-radius: 5px;
+    color: #787887;
+    background-color: #cccccc;
+}
+
+#autoImportSettingPane{
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+}
+
+QPushButton{
+    color: #000000;
+    background-color: #93C9CC;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin: 2px 2px
+}
+QPushButton:hover{
+    color: #ffffff;
+    background-color: #6479CC;
+}
+QPushButton::checked{
+    color: #ffffff;
+    background-color: #333E69;
+}
+QPushButton::disabled{
+    color: #ffffff;
+    background-color: #cccccc;
+}
+QPushButton::pressed{
+    background-color: #333E69;
+}
+#btnQv2rayMultiPort, #btnQv2rayBalancer, #btnQv2rayMultiPortBalancer, #btnCommit {
+    height: 50px;
+}
+
+#btnCommit {
+    margin-left: 50px;
+    margin-top: 20px;
+}
+
+#btnSettings {
+    background-color: #f0f0f0;
+    color: black;
+    font-weight: 700;
+}
+#btnSettings:hover {
+    background-color: lightgray;
+}
+#btnSettings:pressed {
+    background-color: #93c9cc;
+    color: white;
+}
+
+#editQvFolder {
+    padding: 2px 2px;
+}
+
+
+/* QTextEdit or QPlainTextEdit */
+#txtRulesBlockDomain, #txtRulesBlockIp,
+#txtRulesDomain, #txtRulesIp,
+#TextContentForm-plainTextEdit, #TextContentForm-textEdit {
+    color: #787878;
+    background-color: #1e1e1e;
+    font-family: consolas;
+    font-size: 8pt;
+}
+#txtRulesBlockDomain::disabled, #txtRulesBlockIp::disabled,
+#txtRulesDomain::disabled, #txtRulesIp::disabled {
+    background-color: #787878;
+}
+#TextContentForm-plainTextEdit, #TextContentForm-textEdit {
+    font-family: monospace;
+    font-size: 10pt;
+}
+
+#txtHelp {
+    border: none;
+    background-color: transparent;
+}
+
+QListView, QTableView {
+    font-family: "<node_list_font_family>";
+    font-size: <node_list_font_size>pt;
+    outline: 0;
+    padding: 2px 2px;
+    background: #ffffff;
+    gridline-color: white;
+}
+QListView::item, QTableView::item {
+    padding: 2px 4px;
+    margin: 0px 4px 1px 4px;
+    /* border: none; */
+}
+QListView::item:selected, QTableView::item:selected {
+    color: #000000;
+    /* border: 1px solid #6a6ea9; */
+}
+QListView::item:selected:!active, QTableView::item:selected:!active {
+    background: #63888A;
+}
+QListView::item:selected:active, QTableView::item:selected:active {
+    background: #93C9CC;
+}
+QListView::item:hover, QTableView::item:hover {
+    background: #dcdef1;
+}
+
+#listRouteTypes {
+    font-family: "<application_font_family>";
+    font-size: <application_font_size>pt;
+}

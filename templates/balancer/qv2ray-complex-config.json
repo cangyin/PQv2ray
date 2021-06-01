@@ -1,0 +1,21 @@
+{
+    "inbounds": [],
+    "outbounds": [],
+    "routing": {
+        "balancers": [
+            {
+                "selector": [],
+                "strategy": {
+                    "type": "BALANCER STRATEGY"
+                },
+                "tag": "balancer"
+            }
+        ],
+        "domainStrategy": "",
+        "domainMatcher": "DOMAIN MATCHER",
+        "rules": []
+    },
+    "observatory": {
+        "subjectSelector": []
+    }
+}

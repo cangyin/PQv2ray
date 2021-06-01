@@ -1,0 +1,11 @@
+[
+    {
+        "QV2RAY_RULE_ENABLED": true,
+        "QV2RAY_RULE_TAG": "bypass-private-ip",
+        "ip": [
+            "geoip:private"
+        ],
+        "outboundTag": "{outbound_direct_tag}",
+        "type": "field"
+    }
+]

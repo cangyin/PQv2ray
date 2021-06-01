@@ -1,0 +1,23 @@
+{
+    "inbounds": [],
+    "outbounds": [{
+        "QV2RAY_OUTBOUND_METADATA": {
+            "connectionId": "dvichzaynhfm",
+            "displayName": "[Lv2·1.0x] 新加坡04|IP均衡优化|混合负载",
+            "metaType": 1
+        }
+    }],
+    "routing": {
+        "balancers": [],
+        "domainStrategy": "",
+        "rules": [{
+            "QV2RAY_RULE_ENABLED": true,
+            "QV2RAY_RULE_TAG": "{port -> tag}",
+            "inboundTag": [
+                "S5-1"
+            ],
+            "outboundTag": "[Lv2] 台湾|01",
+            "type": "field"
+        }]
+    }
+}

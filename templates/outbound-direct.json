@@ -1,0 +1,13 @@
+{
+    "QV2RAY_OUTBOUND_METADATA": {},
+    "mux": {},
+    "protocol": "freedom",
+    "sendThrough": "0.0.0.0",
+    "settings": {
+        "domainStrategy": "AsIs",
+        "redirect": "",
+        "userLevel": 0
+    },
+    "streamSettings": {},
+    "tag": "direct"
+}

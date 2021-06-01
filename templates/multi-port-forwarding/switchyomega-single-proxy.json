@@ -1,0 +1,25 @@
+{
+    "+[{node.group}] {node.name}": {
+        "profileType": "FixedProfile",
+        "name": "[{node.group}] {node.name}",
+        "bypassList": [{
+                "conditionType": "BypassCondition",
+                "pattern": "127.0.0.1"
+            },
+            {
+                "conditionType": "BypassCondition",
+                "pattern": "[::1]"
+            },
+            {
+                "conditionType": "BypassCondition",
+                "pattern": "localhost"
+            }
+        ],
+        "color": "#dd6633",
+        "fallbackProxy": {
+            "scheme": "socks5",
+            "port": "{port}",
+            "host": "127.0.0.1"
+        }
+    }
+}

@@ -1,0 +1,20 @@
+[
+    {
+        "QV2RAY_RULE_ENABLED": true,
+        "QV2RAY_RULE_TAG": "bypass-CN-domain",
+        "domain": [
+            "geosite:cn"
+        ],
+        "outboundTag": "{outbound_direct_tag}",
+        "type": "field"
+    },
+    {
+        "QV2RAY_RULE_ENABLED": true,
+        "QV2RAY_RULE_TAG": "bypass-CN-ip",
+        "ip": [
+            "geoip:cn"
+        ],
+        "outboundTag": "{outbound_direct_tag}",
+        "type": "field"
+    }
+]
