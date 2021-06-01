@@ -362,7 +362,7 @@ def generate_qv2ray_balancer_config(
             }}
         result.update(observatory)
     else:
-        result['observatory'].pop('subjectSelector', {})
+        result.pop('observatory', {})
 
     ## domainStrategy
     result['routing']['domainStrategy'] = route_settings.get('domainStrategy', 'AsIs')
