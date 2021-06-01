@@ -200,6 +200,8 @@ class SettingsForm(QDialog):
     def on_btnBrwsQvFolder_clicked(self):
         # genius !
         self.parent().on_btnBrowseQvFolder_clicked()
+        self.ui.editQvFolder.setText(self.parent().ui.editQvFolder.text())
+        self.ui.editQvconfigFolder.setText(self.parent().getQv2rayConfigFolder())
 
     @pyqtSlot()
     def on_btnBrwsQvConfigFolder_clicked(self):
