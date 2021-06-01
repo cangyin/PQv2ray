@@ -4,3 +4,9 @@ __pycache__/
 results/*
 
 OmegaOptions*
+
+main.spec
+dist/
+build/
+
+venv/

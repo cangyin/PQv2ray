@@ -83,23 +83,6 @@ def format_json_obj(repr_obj, d):
 def deduplicate(l):
     return list(dict.fromkeys(l))
 
-# scorted common prefixes
-def scp(l :List[str]) -> List[str]:
-    cp = path.commonprefix(l)
-    if cp:
-        return [ cp ]
-    elif len(l):
-        mid = len(l) // 2
-        return scp( l[0:mid] ) + scp( l[mid:] )
-    else:
-        return []
-
-
-def common_prefixes(l :List[str]) -> List[str]:
-    l = sorted(l)
-    print(l)
-    return scp(l)
-
 
 def process_exists(name :str):
     return name in (p.name() for p in psutil.process_iter())
