@@ -29,6 +29,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.config = load_config('config.json')
+        Node.set_default_format(self.config['ui']['node_repr_format'])
         
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)

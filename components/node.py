@@ -14,7 +14,7 @@ class Node():
     def __init__(self, id='', name='', group='', group_id=''):
 
         self.id = id  # e.g. connection_id
-        self.name = name  # e.g. diaplay name of connection
+        self.name = name  # e.g. display name of connection
         self.group = group
         self.group_id = group_id
 

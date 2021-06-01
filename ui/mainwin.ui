@@ -294,6 +294,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="btnQv2rayMultiPortBalancer">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
           <string>多端口负载均衡</string>
          </property>

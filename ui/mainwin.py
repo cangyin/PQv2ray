@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\multi-port-gen\ui\mainwin.ui'
+# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\PQv2ray\ui\mainwin.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -139,6 +139,7 @@ class Ui_MainWindow(object):
         self.btnQv2rayBalancer.setObjectName("btnQv2rayBalancer")
         self.verticalLayout.addWidget(self.btnQv2rayBalancer)
         self.btnQv2rayMultiPortBalancer = QtWidgets.QPushButton(self.groupBoxBtns)
+        self.btnQv2rayMultiPortBalancer.setEnabled(False)
         self.btnQv2rayMultiPortBalancer.setObjectName("btnQv2rayMultiPortBalancer")
         self.verticalLayout.addWidget(self.btnQv2rayMultiPortBalancer)
         spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
