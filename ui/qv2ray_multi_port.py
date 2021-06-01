@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\multi-port-gen\ui\qv2ray_multi_port.ui'
+# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\PQv2ray\ui\qv2ray_multi_port.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -301,6 +301,6 @@ class Ui_Qv2rayMultiPortForm(object):
         self.groupBoxHelp.setTitle(_translate("Qv2rayMultiPortForm", "说明"))
         self.groupBoxImport.setTitle(_translate("Qv2rayMultiPortForm", "导入Qv2ray"))
         self.rbtnAutoImport.setText(_translate("Qv2rayMultiPortForm", "自动"))
-        self.label_20.setText(_translate("Qv2rayMultiPortForm", "将负载均衡配置输出为"))
+        self.label_20.setText(_translate("Qv2rayMultiPortForm", "将多端口配置输出为"))
         self.label_21.setText(_translate("Qv2rayMultiPortForm", "-"))
         self.rbtnManualImport.setText(_translate("Qv2rayMultiPortForm", "手动"))

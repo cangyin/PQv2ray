@@ -470,7 +470,7 @@
          <item>
           <widget class="QLabel" name="label_20">
            <property name="text">
-            <string>将负载均衡配置输出为</string>
+            <string>将多端口配置输出为</string>
            </property>
           </widget>
          </item>
