@@ -1,14 +1,16 @@
-import json
-import logging
+import os
 import re
 from os import path
 from typing import List, Tuple, Dict, Set, Union, Optional
-from textwrap import dedent
 from copy import deepcopy
+import json
+import logging
+from textwrap import dedent
 from traceback import format_exc
 import subprocess as subp
 import shlex
 from shutil import copy as copy_file
+from typing_extensions import TypeGuard
 
 import psutil
 
@@ -38,7 +40,9 @@ def read_text_file(file :str):
         logger.error('Error opening file: \n' + repr(e))
         return ''
 
-def write_text_file(file :str, text :str):
+def write_text_file(file :str, text :str, mkdirs :bool=True):
+    if mkdirs:
+        os.makedirs(path.dirname(file), exist_ok=True)
     with open(file, 'wt', encoding=file_encoding) as f:
         f.write(text)
 
