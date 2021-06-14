@@ -40,7 +40,7 @@ jobs:
           name: release.7z
           path: ./release.7z
           
-      - name: Upload as Release if prereleased event
+      - name: Upload as Release if release event
         if: ${{ github.event_name == 'release' }}
         uses: svenstaro/upload-release-action@v2
         with:
