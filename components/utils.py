@@ -57,12 +57,6 @@ def get_repr_mapping(node :'Node', **more):
     # }
     return d
 
-# def format_repr(repr_str, d :dict):
-#     result = repr_str
-#     for k, v in d.items():
-#         result = result.replace('{' + k + '}', str(v))
-#     return result
-
 def format_repr(repr_str, d :dict) -> str:
     result = repr_str
     for k, v in d.items():
@@ -87,10 +81,8 @@ def format_json_obj(repr_obj, d):
 def deduplicate(l):
     return list(dict.fromkeys(l))
 
-
 def process_exists(name :str):
     return name in (p.name() for p in psutil.process_iter())
-
 
 def start_process(cmd :str):
     subp.Popen(

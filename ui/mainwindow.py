@@ -131,8 +131,7 @@ class MainWindow(QMainWindow):
         # left
         self.populateNodeList()
         # right
-        nodes_right = self.model_right.getNodes()
-        self.model_right.resetNodes(nodes_right)
+        self.model_right.resetNodes(self.model_right.getNodes())
 
 
     def getUserPickedNodes(self):
