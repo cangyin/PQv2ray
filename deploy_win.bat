@@ -10,4 +10,3 @@ echo ----------- Copy additional files -----------
 xcopy /S components\config dist\components\config\
 xcopy /S templates dist\templates\
 xcopy /S ui\style.qss dist\ui\
-copy config.json dist\
