@@ -42,7 +42,7 @@ def __config_file_paths():
     over the others).
     """
     return [
-        os.path.join(os.path.dirname(__file__), 'config'),
+        os.path.join('components', 'config'),
         os.path.join(os.environ.get('XDG_CONFIG_HOME',
                      os.path.join(os.path.expanduser('~'), '.config')), 'pqv2ray'),
         os.getcwd()

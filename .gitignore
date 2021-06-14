@@ -5,7 +5,7 @@ results/*
 
 OmegaOptions*
 
-main.spec
+*.spec
 dist/
 build/
 

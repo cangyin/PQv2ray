@@ -1,9 +1,12 @@
+@echo off
 rmdir /s /q dist
-pyinstaller -F main.py  --noupx --windowed
 
-md dist\results
-md dist\ui
-copy config.json dist\
-xcopy /s templates dist\templates\
-xcopy /s components\config dist\components\config\
-copy ui\style.qss dist\ui\
+echo ----------- Building package -----------
+pyinstaller -F main.py ^
+    -n pqv2ray ^
+    --noupx 
+
+echo ----------- Copy additional files -----------
+xcopy /S components\config dist\components\config\
+xcopy /S templates dist\templates\
+xcopy /S ui\style.qss dist\ui\
