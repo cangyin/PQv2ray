@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         
         group_name = ui.comboGroups.currentText()
         group_id = gen.get_group_id(group_name)
-        connection_ids = gen.groups[group_id]['connections']
+        connection_ids = gen.groups[group_id].get('connections', [])
 
         nodes = []
         for row, connection_id in enumerate(connection_ids):
