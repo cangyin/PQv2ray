@@ -31,24 +31,18 @@ jobs:
         run:
           deploy_win.bat
           
-      - name: create-7z-action
-        uses: DuckSoft/create-7z-action@v1.0
-        with:
-          pathSource: ./dist
-          pathTarget: archive.7z
-          
-      - name: Upload Zipped Archive
+      - name: Upload Built Artifact 
         uses: actions/upload-artifact@v2.2.3
         with:
-          name: archive.7z
-          path: ./archive.7z
+          name: release.7z
+          path: ./dist
           
       - name: Upload as Release if prereleased event
         if: ${{ github.event_name == 'release' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./archive.7z
-          asset_name: archive.7z
+          file: ./release.7z
+          asset_name: release.7z
           tag: ${{ github.ref }}
           overwrite: true
