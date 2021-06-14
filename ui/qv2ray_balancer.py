@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\multi-port-gen\ui\qv2ray_balancer.ui'
+# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\PQv2ray\ui\qv2ray_balancer.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Qv2rayBalancerForm(object):
     def setupUi(self, Qv2rayBalancerForm):
         Qv2rayBalancerForm.setObjectName("Qv2rayBalancerForm")
-        Qv2rayBalancerForm.resize(870, 568)
+        Qv2rayBalancerForm.resize(870, 578)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -201,7 +201,7 @@ class Ui_Qv2rayBalancerForm(object):
         self.labHintDragRules.setObjectName("labHintDragRules")
         self.verticalLayout_3.addWidget(self.labHintDragRules)
         self.listRouteTypes = QtWidgets.QListWidget(self.groupBox)
-        self.listRouteTypes.setMaximumSize(QtCore.QSize(120, 90))
+        self.listRouteTypes.setMaximumSize(QtCore.QSize(120, 100))
         self.listRouteTypes.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.listRouteTypes.setDragEnabled(True)
         self.listRouteTypes.setDragDropOverwriteMode(False)
