@@ -31,11 +31,17 @@ jobs:
         run:
           deploy_win.bat
           
-      - name: Upload Built Artifact 
+      - name: create-7z-action
+        uses: DuckSoft/create-7z-action@v1.0
+        with:
+          pathSource: ./dist
+          pathTarget: release.7z
+          
+      - name: Upload Built Artifact
         uses: actions/upload-artifact@v2.2.3
         with:
           name: release.7z
-          path: ./dist
+          path: ./release.7z
           
       - name: Upload as Release if prereleased event
         if: ${{ github.event_name == 'release' }}
