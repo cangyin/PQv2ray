@@ -127,10 +127,10 @@ class MainWindow(QMainWindow):
 
 
     def updateNodeLists(self):
+        Node.set_default_format(self.config['ui']['node_repr_format'])
         # left
         self.populateNodeList()
         # right
-        Node.set_default_format(self.config['ui']['node_repr_format'])
         nodes_right = self.model_right.getNodes()
         self.model_right.resetNodes(nodes_right)
 
