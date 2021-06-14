@@ -10,7 +10,6 @@ from traceback import format_exc
 import subprocess as subp
 import shlex
 from shutil import copy as copy_file
-from typing_extensions import TypeGuard
 
 import psutil
 
