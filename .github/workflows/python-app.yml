@@ -1,7 +1,5 @@
 name: pack python script
-on:
-  push:
-  release:
+on: [ push, release ]
 
 defaults:
   run:
