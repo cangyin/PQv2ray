@@ -1,0 +1,54 @@
+name: pack python script
+on:
+  push:
+  release:
+    types: [ prereleased ]
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  pack-python-script-job1:
+    runs-on: windows-latest
+    env:
+      PYTHONIOENCODING: UTF-8
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.7.5
+          architecture: x64
+
+      - name: Install requirements and pyinstaller
+      - run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+      
+      - name: Build
+        run:
+          deploy_win.bat
+          
+      - name: create-7z-action
+        uses: DuckSoft/create-7z-action@v1.0
+        with:
+          pathSource: ./dist
+          pathTarget: archive.7z
+          
+      - name: Upload Zipped Archive
+        uses: actions/upload-artifact@v2.2.3
+        with:
+          name: archive.7z
+          path: ./archive.7z
+          
+      - name: Upload as Release if prereleased event
+        if: ${{ github.event_name == 'release' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./archive.7z
+          asset_name: archive.7z
+          tag: ${{ github.ref }}
+          overwrite: true
