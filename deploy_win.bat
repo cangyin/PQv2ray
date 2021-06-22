@@ -3,12 +3,12 @@ rmdir /s /q dist
 
 echo ----------- Building package -----------
 if defined CI (
-    pyinstaller -F main.py ^
+    pyinstaller -F pqv2ray.py ^
         -n pqv2ray ^
         --windowed ^
         --noupx 
 ) else (
-    pyinstaller -F main.py ^
+    pyinstaller -F pqv2ray.py ^
         -n pqv2ray ^
         --noupx 
 )
