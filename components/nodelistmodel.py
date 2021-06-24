@@ -43,7 +43,7 @@ class NodeListModel(QStandardItemModel):
             nodes.append(self.getNode(i))
         return nodes
 
-    def resetNodes(self, nodes :Node):
+    def resetNodes(self, nodes :List[Node]=[]):
         self.removeRows(0, self.rowCount())
         if nodes:
             self.insertRows(0, len(nodes))
