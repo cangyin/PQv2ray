@@ -55,12 +55,16 @@ class Qv2rayBalancerForm(QDialog):
 
         inboundConfig = self.qv2ray_conf.get('inboundConfig', {})
         ui.editListenIp.setText( inboundConfig.get('listenip', '127.0.0.1') )
-        ui.spinSocksPort.setValue( inboundConfig.get('socksSettings', {}).get('port', 1089) )
+
+        socks_port = inboundConfig.get('socksSettings', {}).get('port', 1089)
+        if socks_port:
+            ui.spinSocksPort.setValue(socks_port)
+        ui.chkSocksPort.setChecked(socks_port != 0)
 
         http_port = inboundConfig.get('httpSettings', {}).get('port', 0)
         if http_port:
             ui.spinHttpPort.setValue(http_port)
-        ui.chkHttpPort.setEnabled(http_port != 0)
+        ui.chkHttpPort.setChecked(http_port != 0)
 
         connectionConfig = self.qv2ray_conf.get('defaultRouteConfig', {}).get('connectionConfig', {})
         ui.chkBypassLAN.setChecked( connectionConfig.get('bypassLAN', True) )
