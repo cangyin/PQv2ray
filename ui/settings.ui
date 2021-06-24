@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>908</width>
-    <height>746</height>
+    <height>679</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -73,7 +73,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidgetSettings">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -442,34 +442,6 @@
           <property name="verticalSpacing">
            <number>14</number>
           </property>
-          <item row="1" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_6">
-            <property name="spacing">
-             <number>6</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>为 SwitchyOmega 生成的配置文件</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_5">
-              <item>
-               <widget class="QLineEdit" name="editSoResultPath"/>
-              </item>
-              <item>
-               <widget class="QPushButton" name="btnBrwsSoResultPath">
-                <property name="text">
-                 <string>浏览</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout_7">
             <property name="spacing">
