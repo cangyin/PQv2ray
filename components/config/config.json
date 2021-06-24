@@ -14,8 +14,8 @@
     },
     "qv2ray": {
         "folder": "",
-        "config_folder": null,
-        "auto_start_qv2ray": true
+        "config_folder": "",
+        "auto_start_qv2ray": false
     },
     "v2ray": {
         "domainMatchers": [
