@@ -11,3 +11,5 @@ build/
 
 venv/
 config.json
+
+screen demos/
