@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>972</width>
-    <height>632</height>
+    <width>1037</width>
+    <height>699</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -250,6 +250,12 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
          </property>
         </widget>
        </item>

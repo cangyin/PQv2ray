@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(972, 632)
+        MainWindow.resize(1037, 699)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.centralwidget)
@@ -121,6 +121,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.comboGroups.sizePolicy().hasHeightForWidth())
         self.comboGroups.setSizePolicy(sizePolicy)
+        self.comboGroups.setMinimumSize(QtCore.QSize(200, 0))
         self.comboGroups.setObjectName("comboGroups")
         self.gridLayout_2.addWidget(self.comboGroups, 1, 1, 1, 2)
         spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
