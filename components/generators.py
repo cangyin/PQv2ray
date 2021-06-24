@@ -76,31 +76,6 @@ def get_random_node_id():
     return ''.join( choices(ascii_lowercase, k=12) )
 
 
-def generate_switchyomega_config(nodes :List[Node], ports :List[int], proxy_template :str):
-
-    result = switchyomega_template
-    for port, node in zip(ports, nodes):
-        d = get_repr_mapping(node, port=port)
-        switchyomega_item = format_json_obj(proxy_template, d)
-        result.update(switchyomega_item)
-    return result
-
-
-def generate_port_mapping(nodes, ports, template) -> bool:
-    result = None
-    if isinstance(template, dict):
-        result = {}
-        for index, node in enumerate(nodes):
-            d = get_repr_mapping(node, port=ports[index])
-            result.update( format_json_obj(template, d) )
-    elif isinstance(template, list):
-        result = []
-        for index, node in enumerate(nodes):
-            d = get_repr_mapping(node, port=ports[index])
-            result.extend( format_json_obj(template, d) )
-    return result
-
-
 def generate_qv2ray_multi_port_config(
         nodes :List[Node],
         ports :List[int],

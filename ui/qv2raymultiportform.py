@@ -21,7 +21,7 @@ class Qv2rayMultiPortForm(QDialog):
 
     def __init__(self, parent: Optional['QWidget'], flags: Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType]=Qt.Dialog) -> None:
         super().__init__(parent=parent, flags=flags)
-        self.config = parent.config
+        self.config = parent.config['multi_port_forwarding']
         self.nodes = parent.getUserPickedNodes()
         self.group_names = parent.group_names
 
@@ -32,7 +32,7 @@ class Qv2rayMultiPortForm(QDialog):
         self.block_rule_schemes = ['（无）', '（自定义）', '使用 Qv2ray 阻断规则']
         self.route_schemes = ['（空白）', '（自定义）', '直连', '代理', '阻断']
         
-        ui.spinPortStart.setValue(self.config['multi_port_forwarding']['default_port_start'])
+        ui.spinPortStart.setValue(self.config['default_port_start'])
         ui.comboBlockRuleScheme.addItems(self.block_rule_schemes)
         ui.comboRouteScheme.addItems(self.route_schemes)
         ui.comboAutoImportGroup.addItems(self.group_names)
@@ -44,6 +44,12 @@ class Qv2rayMultiPortForm(QDialog):
             auto_import_name = '多入站 - (多个分组) - ' +  str(len(self.nodes))
         ui.editAutoImportName.setText(auto_import_name)
 
+    @property
+    def ports(self):
+        ui = self.ui
+        ports = range(ui.spinPortStart.value(), ui.spinPortEnd.value() + 1) # range end + 1
+        return ports
+
     def setHelpText(self, text :str):
         try:
             self.ui.labHelp.setText(text)
@@ -53,10 +59,6 @@ class Qv2rayMultiPortForm(QDialog):
     def updateInstantHoverHelp(self):
         ui = self.ui
         helps = {
-            'groupBoxSw': f'''
-                <p>为 SwitchyOmega 插件生成多端口配置文件，生成的文件将被保存为
-                <strong>{self.config['multi_port_forwarding']['switchyomega_result_path']}</strong></p>
-                ''',
         }
         w = QApplication.widgetAt(QCursor.pos())
         if w:
@@ -184,7 +186,67 @@ class Qv2rayMultiPortForm(QDialog):
     @pyqtSlot()
     def on_btnCommit_clicked(self):
         ui = self.ui
-        subconfig = self.config['multi_port_forwarding']
+
+        # generate ports-nodes mapping report
+        self.generate_mapping_report()
+
+        # generate SwitchyOmega file
+        if ui.groupBoxSw.isChecked():
+            ok = self.generate_switchyomega_config()
+            if not ok:
+                return
+
+        # generate Qv2ray complex config
+        shouldClose = self.generate_qv2ray_multi_port_config()
+
+        # finally, close the dialog
+        if shouldClose:
+            self.accept()
+
+
+    def generate_mapping_report(self):
+        mapping_template = load_json(self.config['mapping_report_template_path'])
+        nodes = self.nodes
+        ports = self.ports
+
+        result = None
+        if isinstance(mapping_template, dict):
+            result = {}
+            for port, node in zip(ports, nodes):
+                d = get_repr_mapping(node, port=port)
+                result.update( format_json_obj(mapping_template, d) )
+        elif isinstance(mapping_template, list):
+            result = []
+            for port, node in zip(ports, nodes):
+                d = get_repr_mapping(node, port=port)
+                result.extend( format_json_obj(mapping_template, d) )
+
+        dump_json(result, self.config['mapping_report_result_path'])
+
+
+    def generate_switchyomega_config(self):
+        bak_file = self.ui.editSwFile.text()
+        if not bak_file or not path.exists(bak_file):
+            QMessageBox.warning(self, "未选择 SwitchyOmega 文件", "请选择由 SwitchyOmega 插件导出的备份文件")
+            return False
+
+        proxy_template = load_json(self.config['switchyomega_proxy_template'])
+        
+        result = load_json(bak_file)
+        for port, node in zip(self.ports, self.nodes):
+            d = get_repr_mapping(node, port=port)
+            switchyomega_item = format_json_obj(proxy_template, d)
+            result.update(switchyomega_item)
+
+        # dump result
+        root, ext = path.splitext(bak_file)
+        result_path = root + '.result' + ext
+        dump_json(result, result_path)
+        return True
+
+
+    def generate_qv2ray_multi_port_config(self):
+        ui = self.ui
         route_rules = {
             'domains': ui.txtRulesDomain.toPlainText().strip().splitlines(),
             'ips': ui.txtRulesIp.toPlainText().strip().splitlines()
@@ -193,38 +255,22 @@ class Qv2rayMultiPortForm(QDialog):
             'domains': ui.txtRulesBlockDomain.toPlainText().strip().splitlines(),
             'ips': ui.txtRulesBlockIp.toPlainText().strip().splitlines()
         }
-        nodes = deepcopy(self.nodes)
-
-        # prepare ports
-        ports = range(ui.spinPortStart.value(), ui.spinPortEnd.value() + 1) # range end + 1
-
-        # generate ports-nodes mapping report
-        mapping_template = load_json(subconfig['mapping_report_template_path'])
-        mapping_report = gen.generate_port_mapping(nodes, ports, mapping_template)
-        dump_json(mapping_report, subconfig['mapping_report_result_path'])
-
-        # generate SwitchyOmega file
-        if ui.groupBoxSw.isChecked():
-            switchyomega_proxy_template = load_json(subconfig['switchyomega_proxy_template'])
-            switchyomega_result =  gen.generate_switchyomega_config(self.nodes, ports, switchyomega_proxy_template)
-            dump_json(switchyomega_result, subconfig['switchyomega_result_path'])
-
-        # generate Qv2ray complex config
-        if subconfig['default_port_type'] == 'HTTP':
+        
+        if self.config['default_port_type'] == 'HTTP':
             inbound_template = gen.inbound_http_template 
         else:
             inbound_template = gen.inbound_socks_template 
         
         qv2ray_result = gen.generate_qv2ray_multi_port_config(
-            nodes=nodes,
-            ports=ports,
+            nodes=self.nodes,
+            ports=self.ports,
             inbound_template=inbound_template,
             route_rules=route_rules,
             block_rules=block_rules,
-            formats=subconfig)
+            formats=self.config)
         
         # always write result to file
-        dump_json(qv2ray_result, subconfig['qv2ray_result_path'])
+        dump_json(qv2ray_result, self.config['qv2ray_result_path'])
 
         # merge into Qv2ray connection config system
         shouldClose = False
@@ -236,7 +282,7 @@ class Qv2rayMultiPortForm(QDialog):
             )
             shouldClose = self.parent().addNodeToQv2rayUi(
                 new_node=qv2ray_new_node,
-                qv2ray_node_file=subconfig['qv2ray_result_path']
+                qv2ray_node_file=self.config['qv2ray_result_path']
             )
         else: # manual import
             shouldClose = self.parent().showJsonContent(
@@ -244,8 +290,4 @@ class Qv2rayMultiPortForm(QDialog):
                 title='手动导入复杂配置到Qv2ray',
                 description='您可以复制以下全部内容，并使用Qv2ray的JSON导入功能导入节点。'
             )
-
-        # finally, close the dialog
-        if shouldClose:
-            self.accept()
-
+        return shouldClose

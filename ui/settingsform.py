@@ -55,12 +55,8 @@ class SettingsForm(QDialog):
         # # tab 2, Qv2ray
         self.config_mgr_qv2ray = ConfigManager()
         self.config_mgr_qv2ray.set_defaults(config['qv2ray'])
-        self.config_mgr_qv2ray.set_defaults({
-            'config_folder': parent.getQv2rayConfigFolder(),
-        })
         self.config_mgr_qv2ray.add_handlers({
             'folder': ui.editQvFolder,
-            'config_folder': ui.editQvconfigFolder,
             'auto_start_qv2ray': ui.chkAutoStartQv2ray,
         })
         # # tab 3, v2ray
@@ -83,7 +79,6 @@ class SettingsForm(QDialog):
             'mapping_report_template_path': ui.editMappingReportTemplatePath,
             'mapping_report_result_path': ui.editMappingReportResultPath,
             'qv2ray_result_path': ui.editQvComplexConfigResultPath,
-            'switchyomega_result_path': ui.editSoResultPath
         })
         # # tab 5
         self.config_mgr_bl = ConfigManager()
@@ -161,26 +156,14 @@ class SettingsForm(QDialog):
         config = self.config
         # # tab 1
         config['ui'] = self.config_mgr_ui.as_dict()
+        # # tab 2
+        config['qv2ray'] = self.config_mgr_qv2ray.as_dict()
         # # tab 3
         config['v2ray'] = self.config_mgr_v2ray.as_dict()
         # # tab 4
         config['multi_port_forwarding'] = self.config_mgr_mp.as_dict()
         # # tab 5
         config['balancer'] = self.config_mgr_bl.as_dict()
-
-        # # tab 2
-        qv_valid = self.parent().checkQv2rayFolder(self.ui.editQvFolder.text())
-        qv_config_valid = self.parent().checkQv2rayConfigFolder(self.ui.editQvconfigFolder.text())
-        if  qv_valid and qv_config_valid:
-            config['qv2ray'].update(self.config_mgr_qv2ray.as_dict())
-            if config['qv2ray']['config_folder'].replace(config['qv2ray']['folder'], '') == '/config':
-                config['qv2ray']['config_folder'] = None
-        else:
-            if not qv_valid:
-                QMessageBox.warning(self, '错误', '您所选择的文件夹看起来不像是 Qv2ray 的根目录。')
-            else: # not qv_config_valid
-                QMessageBox.warning(self, '错误', '您所选择的文件夹不是 Qv2ray 的配置目录。')
-            return
 
         self.accept()
 
@@ -196,23 +179,23 @@ class SettingsForm(QDialog):
 
     # tab 2, Qv2ray
 
-    @pyqtSlot()
-    def on_btnBrwsQvFolder_clicked(self):
-        # genius !
-        self.parent().on_btnBrowseQvFolder_clicked()
-        self.ui.editQvFolder.setText(self.parent().ui.editQvFolder.text())
-        self.ui.editQvconfigFolder.setText(self.parent().getQv2rayConfigFolder())
+    @pyqtSlot(str)
+    def on_editQvFolder_textChanged(self, text :str):
+        valid = self.parent().checkQv2rayFolder(text)
+        if not valid: # uncheck on invalid only
+            self.ui.chkAutoStartQv2ray.setChecked(False)
+        self.ui.chkAutoStartQv2ray.setEnabled(valid)            
 
     @pyqtSlot()
-    def on_btnBrwsQvConfigFolder_clicked(self):
+    def on_btnBrwsQvFolder_clicked(self):
         ui = self.ui
-        qv2ray_config_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 配置文件夹', self.parent().getQv2rayConfigFolder())
-        if qv2ray_config_folder:
-            qv2ray_config_folder = relative_path(qv2ray_config_folder)
-            if self.parent().checkQv2rayConfigFolder(qv2ray_config_folder):
-                ui.editQvconfigFolder.setText(qv2ray_config_folder)
+        qv2ray_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 文件夹', self.config['qv2ray']['folder'])
+        if qv2ray_folder:
+            qv2ray_folder = relative_path(qv2ray_folder)
+            if self.parent().checkQv2rayFolder(qv2ray_folder):
+                ui.editQvFolder.setText(qv2ray_folder)
             else:
-                QMessageBox.warning(self, '错误', f'您所选择的文件夹 <br/>{qv2ray_config_folder}<br/> 看起来不像是 Qv2ray 的配置目录。')
+                QMessageBox.warning(self, '错误', f'您所选择的文件夹 <br/>{qv2ray_folder}<br/> 看起来不像是 Qv2ray 的根目录。')
 
     # tab 3
 
@@ -247,3 +230,4 @@ class SettingsForm(QDialog):
     @pyqtSlot()
     def on_btnAboutQt_clicked(self):
         QMessageBox.aboutQt(self)
+    

@@ -1,4 +1,4 @@
-import os
+import os, sys
 import re
 from os import path
 from typing import List, Tuple, Dict, Set, Union, Optional
@@ -21,6 +21,8 @@ logger = logging.getLogger('utils')
 
 
 file_encoding = 'UTF-8'
+qv2ray_bin_name = 'qv2ray.exe' if sys.platform == 'win32' else 'qv2ray'
+
 
 def load_json(file :str):
     return json.loads(read_text_file(file))
@@ -84,12 +86,18 @@ def deduplicate(l):
 def process_exists(name :str):
     return name in (p.name() for p in psutil.process_iter())
 
+def qv2ray_process_exists():
+    return process_exists(qv2ray_bin_name)
+
 def start_process(cmd :str):
     subp.Popen(
         args=shlex.split(cmd),
         start_new_session=True,
         creationflags=subp.CREATE_NEW_PROCESS_GROUP
     )
+
+def start_qv2ray_process(qv2ray_folder :str):
+    return start_process('\"' + path.join(qv2ray_folder, qv2ray_bin_name) + '\"')
 
 def kill_process(name):
     # TODO

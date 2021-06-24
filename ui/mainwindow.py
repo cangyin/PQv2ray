@@ -31,21 +31,20 @@ class MainWindow(QMainWindow):
         self.config = load_config('config.json')
         Node.set_default_format(self.config['ui']['node_repr_format'])
         
+        self.group_names = []
+        self.model_left = NodeListModel(0, self)
+        self.model_right = NodeListModel(0, self)
+        
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.postSetupUi()
-        
-        self.group_names = []
-        if self.checkQv2rayFolderUi():
-            self.reloadQv2rayConfigs()
-            self.populateGroupNames()
 
 
     def postSetupUi(self):
         ui = self.ui
-        self.updateStyleSheet()
+        self.reloadStyleSheet()
         
-        ui.editQvFolder.setText(self.config['qv2ray']['folder'])
+        ui.editQvConfigFolder.setText(self.config['qv2ray']['config_folder'])
 
         icon_options = [{
             'scale_factor': 0.8,
@@ -55,9 +54,6 @@ class MainWindow(QMainWindow):
         ui.btnAppendToRight.setIcon(qtawesome.icon('fa5s.plus', options=icon_options))
         ui.btnDeleteFromRight.setIcon(qtawesome.icon('fa5s.trash-alt', options=icon_options))
         ui.btnSettings.setIcon(qtawesome.icon('fa5s.cogs', options=icon_options))
-
-        self.model_left = NodeListModel(0, self)
-        self.model_right = NodeListModel(0, self)
 
         ui.listViewLeft.setModel(self.model_left)
         ui.listViewRight.setModel(self.model_right)
@@ -78,7 +74,7 @@ class MainWindow(QMainWindow):
         ui.listViewRight.setWordWrap(False)
 
 
-    def updateStyleSheet(self) -> None:
+    def reloadStyleSheet(self) -> None:
         styleSheet = open('ui/style.qss', 'rt', encoding='UTF-8').read()
 
         uiconfig = self.config['ui']
@@ -108,7 +104,7 @@ class MainWindow(QMainWindow):
         ui.comboGroups.addItems(self.group_names)
 
 
-    def populateNodeList(self):
+    def populateNodeListLeft(self):
         ui = self.ui
         
         group_name = ui.comboGroups.currentText()
@@ -129,7 +125,7 @@ class MainWindow(QMainWindow):
     def updateNodeLists(self):
         Node.set_default_format(self.config['ui']['node_repr_format'])
         # left
-        self.populateNodeList()
+        self.populateNodeListLeft()
         # right
         self.model_right.resetNodes(self.model_right.getNodes())
 
@@ -138,21 +134,8 @@ class MainWindow(QMainWindow):
         return self.model_right.getNodes()
 
 
-    def checkQv2rayFolderUi(self):
-        ui = self.ui
-        qv2ray_folder = ui.editQvFolder.text()
-        valid = self.checkQv2rayFolder(qv2ray_folder)
-
-        if valid:
-            self.config['qv2ray']['folder'] = qv2ray_folder
-        ui.groupBoxBtns.setEnabled(valid)
-        ui.comboGroups.setEnabled(valid)
-        ui.nodeSelectorPane.setEnabled(valid)
-        return valid
-
-
     def checkQv2rayFolder(self, folder :str):
-        valid = path.exists(folder + '/qv2ray.exe')
+        valid = path.exists( path.join(folder, qv2ray_bin_name) )
         return valid
 
 
@@ -163,13 +146,21 @@ class MainWindow(QMainWindow):
         return valid
 
 
-    def getQv2rayConfigFolder(self):
-        # so poor
-        return self.config['qv2ray']['folder'] + '/config' if not self.config['qv2ray']['config_folder'] else self.config['qv2ray']['config_folder']
+    def checkQv2rayConfigFolderUi(self):
+        ui = self.ui
+        qv_config_folder = ui.editQvConfigFolder.text()
+        valid = self.checkQv2rayConfigFolder(qv_config_folder)
 
+        if valid:
+            self.config['qv2ray']['config_folder'] = qv_config_folder
+        ui.groupBoxBtns.setEnabled(valid)
+        ui.comboGroups.setEnabled(valid)
+        ui.nodeSelectorPane.setEnabled(valid)
+        return valid
+        
 
     def reloadQv2rayConfigs(self):
-        folder = self.getQv2rayConfigFolder()
+        folder = self.config['qv2ray']['config_folder']
         gen.groups = load_json( folder + '/groups.json' )
         gen.connections = load_json( folder + '/connections.json' )
         gen.qv2ray_multi_port_template = load_json( self.config['multi_port_forwarding']['qv2ray_template_path'] )
@@ -182,7 +173,7 @@ class MainWindow(QMainWindow):
 
 
     def isQv2rayComplexConfig(self, node_id :str):
-        config_path = self.getQv2rayConfigFolder() + f'/connections/{node_id}.qv2ray.json'
+        config_path = self.config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json'
         bExist = path.exists(config_path)
         config = {} if not bExist else load_json( config_path )
         bRule = ('routing' in config) and ('rules' in config['routing'])
@@ -234,7 +225,7 @@ class MainWindow(QMainWindow):
                 "lastUpdatedDate": 0,
             }
         })
-        qv2ray_config_folder = self.getQv2rayConfigFolder()
+        qv2ray_config_folder = self.config['qv2ray']['config_folder']
         dump_json(gen.groups, qv2ray_config_folder + '/groups.json')
         dump_json(gen.connections, qv2ray_config_folder + '/connections.json')
         copy_file(qv2ray_node_file, qv2ray_config_folder + f'/connections/{node.id}.qv2ray.json')
@@ -259,41 +250,41 @@ class MainWindow(QMainWindow):
         self.addNodeToQv2ray(new_node, qv2ray_node_file)
         
         if self.config['qv2ray']['auto_start_qv2ray']:
-            start_process(self.config['qv2ray']['folder'] + '/qv2ray.exe')
+            start_qv2ray_process(self.config['qv2ray']['folder'])
             time.sleep(0.5)
 
-        if process_exists('qv2ray.exe'):
+        if qv2ray_process_exists():
             res = QMessageBox.information(self, '完成', '新配置导入完成，Qv2ray已经启动。', buttons=QMessageBox.Ok | QMessageBox.Close)
         else:
             res = QMessageBox.information(self, '完成', '新配置导入完成，但Qv2ray尚未启动，您可以手动启动它。', buttons=QMessageBox.Ok | QMessageBox.Close)
         return res == QMessageBox.Ok
 
+
     @pyqtSlot(str)
-    def on_editQvFolder_textEdited(self, text):
-        if self.checkQv2rayFolderUi():
+    def on_editQvConfigFolder_textChanged(self, text):
+        if self.checkQv2rayConfigFolderUi():
             self.reloadQv2rayConfigs()
             self.populateGroupNames()
+        else:
+            self.model_right.resetNodes()
 
 
     @pyqtSlot()
-    def on_btnBrowseQvFolder_clicked(self):
+    def on_btnBrwsQvConfigFolder_clicked(self):
         ui = self.ui
-        qv2ray_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 文件夹', self.config['qv2ray']['folder'])
-        if qv2ray_folder:
-            qv2ray_folder = relative_path(qv2ray_folder)
-            ui.editQvFolder.setText(qv2ray_folder)
-            if self.checkQv2rayFolderUi():
-                self.reloadQv2rayConfigs()
-                self.populateGroupNames()
-            else:
-                QMessageBox.warning(self, '错误', f'您所选择的文件夹<br/>{qv2ray_folder}<br/>看起来不像是 Qv2ray 的根目录。')
+        qv_config_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 配置文件夹', self.config['qv2ray']['config_folder'])
+        if qv_config_folder:
+            qv_config_folder = relative_path(qv_config_folder)
+            ui.editQvConfigFolder.setText(qv_config_folder) # triggers on_editQvConfigFolder_textChanged
+            if not self.checkQv2rayConfigFolder(qv_config_folder):
+                QMessageBox.warning(self, '错误', f'您所选择的文件夹<br/>{qv_config_folder}<br/>看起来不像是 Qv2ray 的配置文件夹。')
 
 
     @pyqtSlot(str)
     def on_comboGroups_currentTextChanged(self, s :str):
         if s:
             print(s)
-            self.populateNodeList()
+            self.populateNodeListLeft()
 
 
     @pyqtSlot()
@@ -372,7 +363,7 @@ class MainWindow(QMainWindow):
         if(w.exec() == QDialog.Accepted):
             self.config.update(w.config)
             self.saveConfig()
-            self.updateStyleSheet()
+            self.reloadStyleSheet()
             self.updateNodeLists()
 
 
