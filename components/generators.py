@@ -39,7 +39,7 @@ def get_display_name(connection_id):
 
 
 def get_connection_id(group_id, display_name):
-    connection_ids = groups[group_id]['connections']
+    connection_ids = groups[group_id].get('connections', [])
     for connection_id in connection_ids:
         if connections[connection_id]['displayName'] == display_name:
             return connection_id
@@ -54,7 +54,7 @@ def get_group_id(group_name :str):
 
 
 def get_nodes_in_group(group_id :str):
-    connection_ids = groups[group_id]['connections']
+    connection_ids = groups[group_id].get('connections', [])
     nodes = []
     for connection_id in connection_ids:
         nodes.append(Node(
@@ -68,7 +68,7 @@ def get_nodes_in_group(group_id :str):
 
 def get_connection_names_in_group(group_name):
     group_id = get_group_id(group_name)
-    connection_ids = groups[group_id]['connections']
+    connection_ids = groups[group_id].get('connections', [])
     return [get_display_name(connection_id) for connection_id in connection_ids]
 
 

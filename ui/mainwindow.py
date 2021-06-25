@@ -110,17 +110,7 @@ class MainWindow(QMainWindow):
             return
         
         group_name = ui.comboGroups.currentText()
-        group_id = gen.get_group_id(group_name)
-        connection_ids = gen.groups[group_id].get('connections', [])
-
-        nodes = []
-        for row, connection_id in enumerate(connection_ids):
-            nodes.append(Node(
-                id=connection_id,
-                name=gen.get_display_name(connection_id),
-                group=group_name,
-                group_id=group_id,
-            ))
+        nodes = gen.get_nodes_in_group(gen.get_group_id(group_name))
         self.model_left.resetNodes(nodes)
 
 
@@ -219,7 +209,7 @@ class MainWindow(QMainWindow):
 
     def addNodeToQv2ray(self, node :'Node', qv2ray_node_file :str):
         group_id = gen.get_group_id(node.group) or gen.default_group_id
-        gen.groups[group_id]['connections'].append(node.id)
+        gen.groups[group_id]['connections'] = gen.groups[group_id].get('connections', []) + [node.id]
         gen.connections.update({
             node.id: {
                 "creationDate": int(time.time()),

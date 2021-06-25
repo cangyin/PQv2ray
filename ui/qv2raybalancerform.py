@@ -155,12 +155,13 @@ class Qv2rayBalancerForm(QDialog):
 
         # fallback node
         fallback_node = self.getFallBackNode()
-        if fallback_node.id and self.parent().isQv2rayComplexConfig(fallback_node.id):
-            QMessageBox.information(self, '选中了复杂配置节点', '您选择的默认出站节点属于复杂配置节点，而一个复杂配置节点不能引用另外一个复杂配置节点作为出站节点。')
-            return
-        if fallback_node in nodes:
-            del nodes[ nodes.index(fallback_node) ]
-        nodes.insert(0, fallback_node)
+        if fallback_node:
+            if fallback_node.id and self.parent().isQv2rayComplexConfig(fallback_node.id):
+                QMessageBox.information(self, '选中了复杂配置节点', '您选择的默认出站节点属于复杂配置节点，而一个复杂配置节点不能引用另外一个复杂配置节点作为出站节点。')
+                return
+            if fallback_node in nodes:
+                del nodes[ nodes.index(fallback_node) ]
+            nodes.insert(0, fallback_node)
 
         # ports
         ports = {
