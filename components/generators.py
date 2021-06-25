@@ -54,7 +54,7 @@ def get_group_id(group_name :str):
 
 
 def get_nodes_in_group(group_id :str):
-    connection_ids = groups[group_id]['connections']
+    connection_ids = groups[group_id].get('connections', [])
     nodes = []
     for connection_id in connection_ids:
         nodes.append(Node(
