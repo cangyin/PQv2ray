@@ -279,6 +279,9 @@
        <string>Qv2ray</string>
       </attribute>
       <widget class="QCheckBox" name="chkAutoStartQv2ray">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>20</x>

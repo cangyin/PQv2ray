@@ -133,6 +133,7 @@ class Ui_Settings(object):
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
         self.chkAutoStartQv2ray = QtWidgets.QCheckBox(self.tab_2)
+        self.chkAutoStartQv2ray.setEnabled(False)
         self.chkAutoStartQv2ray.setGeometry(QtCore.QRect(20, 100, 241, 19))
         self.chkAutoStartQv2ray.setObjectName("chkAutoStartQv2ray")
         self.layoutWidget = QtWidgets.QWidget(self.tab_2)

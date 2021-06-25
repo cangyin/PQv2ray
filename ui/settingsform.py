@@ -87,6 +87,7 @@ class SettingsForm(QDialog):
             'outbound_tag_format': ui.editOutboundTagFmt2,
             'qv2ray_result_path': ui.editQvComplexConfigResultPath2,
         })
+        
         self.setHelpText('')
     
     def setHelpText(self, text):

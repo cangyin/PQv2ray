@@ -106,6 +106,8 @@ class MainWindow(QMainWindow):
 
     def populateNodeListLeft(self):
         ui = self.ui
+        if not ui.nodeSelectorPane.isEnabled():
+            return
         
         group_name = ui.comboGroups.currentText()
         group_id = gen.get_group_id(group_name)
@@ -136,6 +138,7 @@ class MainWindow(QMainWindow):
 
     def checkQv2rayFolder(self, folder :str):
         valid = path.exists( path.join(folder, qv2ray_bin_name) )
+        print(valid)
         return valid
 
 
