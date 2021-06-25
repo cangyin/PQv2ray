@@ -350,6 +350,24 @@ class MainWindow(QMainWindow):
         ui.btnDeleteFromRight.setEnabled(True)
 
 
+    @pyqtSlot(QModelIndex)
+    def on_listViewLeft_doubleClicked(self, index :QModelIndex):
+        self.selection_left.select(index, QItemSelectionModel.ClearAndSelect)
+        self.on_btnAppendToRight_clicked()
+        
+
+    @pyqtSlot(QModelIndex)
+    def on_listViewRight_doubleClicked(self, index :QModelIndex):
+        self.selection_right.clear()
+        self.model_right.removeNode(index.row())
+
+
+    @pyqtSlot(QKeyEvent)
+    def on_listViewRight_keyPress(self, e :QKeyEvent):
+        if e.key() == Qt.Key_Delete:
+            self.on_btnDeleteFromRight_clicked()
+
+
     @pyqtSlot(str)
     def on_editFilter_textChanged(self, text):
         ui = self.ui

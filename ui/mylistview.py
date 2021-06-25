@@ -7,6 +7,7 @@ class MyListView(QtWidgets.QListView):
     
     focusIn = QtCore.pyqtSignal()
     focusOut = QtCore.pyqtSignal()
+    keyPress = QtCore.pyqtSignal(QtGui.QKeyEvent)
 
     def __init__(self, parent: typing.Optional[QWidget]) -> None:
         super().__init__(parent=parent)
@@ -20,3 +21,8 @@ class MyListView(QtWidgets.QListView):
     def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
         self.focusOut.emit()
         return super().focusOutEvent(e)
+
+    @QtCore.pyqtSlot()
+    def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
+        self.keyPress.emit(e)
+        return super().keyPressEvent(e)
