@@ -35,7 +35,7 @@ direct_node = Node(id='1'*12, name=outbound_direct_tag)
 
 
 def get_display_name(connection_id):
-    return connections[connection_id]['displayName']
+    return connections[connection_id].get('displayName', '')
 
 
 def get_connection_id(group_id, display_name):
@@ -64,12 +64,6 @@ def get_nodes_in_group(group_id :str):
             group_id=group_id
         ))
     return nodes
-
-
-def get_connection_names_in_group(group_name):
-    group_id = get_group_id(group_name)
-    connection_ids = groups[group_id].get('connections', [])
-    return [get_display_name(connection_id) for connection_id in connection_ids]
 
 
 def get_random_node_id():
@@ -213,6 +207,8 @@ def generate_qv2ray_balancer_config(
         }
     '''
     assert(len(route_type_order) == 3)
+
+    prepare_qv2ray_balancer_template(config)
     
     # result
     result = deepcopy(qv2ray_balancer_template)

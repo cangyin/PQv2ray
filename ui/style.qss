@@ -20,6 +20,7 @@ QGroupBox::title {
     padding: 0 4px;
     /* border-left: 2px solid #93c9cc;
     border-right: 2px solid #93c9cc; */
+    color: #1b8c90;
 }
 #groupBoxBtns, #groupBoxBlockRules {
     border: none;
@@ -39,25 +40,29 @@ QGroupBox#groupBoxHelp{
     font-size: 32pt;
 }
 
-#tabWidgetSettings QLineEdit, #Qv2rayBalancerForm QLineEdit, #Qv2rayMultiPortForm QLineEdit {
+QLineEdit {
     font-family: consolas;
     font-size: 9pt;
     color: #3e3e3e;
     border: none;
-    /* border-radius: 5px; */
     border-bottom: 2px solid #93c9cc;
-}
-#Qv2rayBalancerForm QLineEdit, #Qv2rayMultiPortForm QLineEdit {
     background-color: transparent;
 }
-#Qv2rayBalancerForm QLineEdit::disabled, #Qv2rayMultiPortForm QLineEdit::disabled {
+
+QLineEdit::disabled {
     border: none;
     border-radius: 5px;
     color: #787887;
     background-color: #cccccc;
 }
+QLineEdit#editFilter {
+    font-family: "<application_font_family>";
+    font-size: <application_font_size>pt;
+    padding: 0px;
+    border-bottom: 1px solid #93c9cc;
+}
 
-#autoImportSettingPane{
+#autoImportSettingPane, #updateImportSettingPane {
     border: 1px solid #cccccc;
     border-radius: 5px;
 }

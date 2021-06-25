@@ -53,7 +53,7 @@ class Ui_Settings(object):
         self.groupBox = QtWidgets.QGroupBox(self.tab)
         self.groupBox.setObjectName("groupBox")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox)
-        self.gridLayout_2.setContentsMargins(-1, 16, -1, -1)
+        self.gridLayout_2.setContentsMargins(-1, 20, -1, -1)
         self.gridLayout_2.setVerticalSpacing(12)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.fontComboAppFont = QtWidgets.QFontComboBox(self.groupBox)

@@ -35,6 +35,11 @@ class Qv2rayMultiPortForm(QDialog):
         ui.spinPortStart.setValue(self.config['default_port_start'])
         ui.comboBlockRuleScheme.addItems(self.block_rule_schemes)
         ui.comboRouteScheme.addItems(self.route_schemes)
+
+        ui.comboUpdateNodeName.link_comboBox(ui.comboUpdateNodeGroup)
+        ui.comboUpdateNodeName.set_selector(lambda node: self.parent().isQv2rayComplexConfig(node))
+        ui.comboUpdateNodeGroup.addItems(self.group_names)
+
         ui.comboAutoImportGroup.addItems(self.group_names)
 
         picked_groups = deduplicate([node.group for node in self.nodes])
@@ -181,7 +186,17 @@ class Qv2rayMultiPortForm(QDialog):
 
     @pyqtSlot(bool)
     def on_rbtnAutoImport_toggled(self, b):
-        self.ui.autoImportSettingPane.setEnabled(b)
+        if b:
+            self.ui.importSettingStack.setCurrentIndex(0)
+
+    @pyqtSlot(bool)
+    def on_rbtnUpdateNode_toggled(self, b):
+        if b:
+            self.ui.importSettingStack.setCurrentIndex(1)
+        
+    @pyqtSlot(bool)
+    def on_rbtnManualImport_toggled(self, b):
+        self.ui.importSettingStack.setEnabled(not b)
     
     @pyqtSlot()
     def on_btnCommit_clicked(self):
@@ -284,6 +299,12 @@ class Qv2rayMultiPortForm(QDialog):
                 new_node=qv2ray_new_node,
                 qv2ray_node_file=self.config['qv2ray_result_path']
             )
+        elif ui.rbtnUpdateNode.isChecked():
+            node = ui.comboUpdateNodeName.currentData()
+            if not node:
+                QMessageBox.warning(self, "未选择欲更新的节点", "请选择一个已有节点")
+                return
+            shouldClose = self.parent().replaceNodeInQv2ray(node.id, qv2ray_result)
         else: # manual import
             shouldClose = self.parent().showJsonContent(
                 json=qv2ray_result,

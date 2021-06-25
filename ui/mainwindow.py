@@ -31,9 +31,10 @@ class MainWindow(QMainWindow):
         self.config = load_config('config.json')
         Node.set_default_format(self.config['ui']['node_repr_format'])
         
-        self.group_names = []
         self.model_left = NodeListModel(0, self)
         self.model_right = NodeListModel(0, self)
+        self.group_names = []
+        self.node_selector = None
         
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -54,6 +55,9 @@ class MainWindow(QMainWindow):
         ui.btnAppendToRight.setIcon(qtawesome.icon('fa5s.plus', options=icon_options))
         ui.btnDeleteFromRight.setIcon(qtawesome.icon('fa5s.trash-alt', options=icon_options))
         ui.btnSettings.setIcon(qtawesome.icon('fa5s.cogs', options=icon_options))
+        fm = ui.labFilter.fontMetrics()
+        icon_size = QSize(fm.height(), fm.height())
+        ui.labFilter.setPixmap(qtawesome.icon('fa5s.filter', options=[{'color': '#1b8c90'}]).pixmap(icon_size))
 
         ui.listViewLeft.setModel(self.model_left)
         ui.listViewRight.setModel(self.model_right)
@@ -102,6 +106,8 @@ class MainWindow(QMainWindow):
             self.group_names.append(group['displayName'])
         ui.comboGroups.clear()
         ui.comboGroups.addItems(self.group_names)
+        ui.comboGroups.insertSeparator(ui.comboGroups.count())
+        ui.comboGroups.addItem('（全部）')
 
 
     def populateNodeListLeft(self):
@@ -109,8 +115,18 @@ class MainWindow(QMainWindow):
         if not ui.nodeSelectorPane.isEnabled():
             return
         
-        group_name = ui.comboGroups.currentText()
-        nodes = gen.get_nodes_in_group(gen.get_group_id(group_name))
+        if ui.comboGroups.currentIndex() == ui.comboGroups.count() - 1:
+            # all nodes in all groups
+            nodes = []
+            for i in range(ui.comboGroups.count() - 2):
+                group_name = ui.comboGroups.itemText(i)
+                nodes.extend( gen.get_nodes_in_group(gen.get_group_id(group_name)) )
+        else:
+            group_name = ui.comboGroups.currentText()
+            nodes = gen.get_nodes_in_group(gen.get_group_id(group_name))
+
+        if self.node_selector:
+            nodes = [node for node in nodes if self.node_selector(node)]
         self.model_left.resetNodes(nodes)
 
 
@@ -165,8 +181,8 @@ class MainWindow(QMainWindow):
         self.qv2ray_conf = load_json( folder + '/Qv2ray.conf' )
 
 
-    def isQv2rayComplexConfig(self, node_id :str):
-        config_path = self.config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json'
+    def isQv2rayComplexConfig(self, node :Node):
+        config_path = self.config['qv2ray']['config_folder'] + f'/connections/{node.id}.qv2ray.json'
         bExist = path.exists(config_path)
         config = {} if not bExist else load_json( config_path )
         bRule = ('routing' in config) and ('rules' in config['routing'])
@@ -253,6 +269,12 @@ class MainWindow(QMainWindow):
         return res == QMessageBox.Ok
 
 
+    def replaceNodeInQv2ray(self, node_id :str, node_json :dict):
+        dump_json(node_json, self.config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json')
+        res = QMessageBox.information(self, '完成', '配置更新完成，您需要重启Qv2ray。', buttons=QMessageBox.Ok | QMessageBox.Close)
+        return res == QMessageBox.Ok
+
+
     @pyqtSlot(str)
     def on_editQvConfigFolder_textChanged(self, text):
         if self.checkQv2rayConfigFolderUi():
@@ -286,10 +308,12 @@ class MainWindow(QMainWindow):
         nodes_right = self.model_right.getNodes()
         ignored_nodes = []
 
-        for index in self.selection_left.selectedIndexes():
+        selectedRows = self.selection_left.selectedRows()
+        selectedRows = sorted(selectedRows, key=lambda modelIndex :modelIndex.row())
+        for index in selectedRows:
             node = self.model_left.getNode(index.row())
             # check if Qv2ray complex config
-            if node and self.isQv2rayComplexConfig(node.id):
+            if node and self.isQv2rayComplexConfig(node):
                 ignored_nodes.append(node)
                 continue
             if not node in nodes_right:
@@ -324,6 +348,34 @@ class MainWindow(QMainWindow):
         ui = self.ui
         ui.btnAppendToRight.setEnabled(False)
         ui.btnDeleteFromRight.setEnabled(True)
+
+
+    @pyqtSlot(str)
+    def on_editFilter_textChanged(self, text):
+        ui = self.ui
+        r =  ui.editFilter.text()
+        try:
+            re.compile(r)
+            ui.editFilter.setStyleSheet('color: #1b8c90;')
+        except re.error:
+            # invalid regular expression
+            r = re.escape(r)
+            ui.editFilter.setStyleSheet('color: #1e1e1e;')
+            return
+            
+        if r.lower() == r: # case insensitive
+            self.node_selector = lambda node : re.search(r, repr(node).lower()) != None
+        else: # case sensitive
+            self.node_selector = lambda node : re.search(r, repr(node)) != None
+
+        self.populateNodeListLeft()
+        if r != '':
+            self.on_btnCheckAllLeft_clicked()
+
+
+    @pyqtSlot()
+    def on_editFilter_returnPressed(self):
+        self.on_btnAppendToRight_clicked()
 
 
     @pyqtSlot()
