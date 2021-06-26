@@ -3,6 +3,7 @@ import re
 from os import path
 from typing import List, Tuple, Dict, Set, Union, Optional
 from copy import deepcopy
+import functools
 import json
 import logging
 from textwrap import dedent
@@ -33,6 +34,7 @@ def dump_json(obj, file :str):
 def dump_jsons(obj):
     return json.dumps(obj, ensure_ascii=False, indent=4)
 
+@functools.lru_cache(maxsize=128)
 def read_text_file(file :str):
     try:
         with open(file, 'rt', encoding=file_encoding) as f:
