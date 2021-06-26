@@ -55,6 +55,7 @@ class MainWindow(QMainWindow):
         ui.btnAppendToRight.setIcon(qtawesome.icon('fa5s.plus', options=icon_options))
         ui.btnDeleteFromRight.setIcon(qtawesome.icon('fa5s.trash-alt', options=icon_options))
         ui.btnSettings.setIcon(qtawesome.icon('fa5s.cogs', options=icon_options))
+        ui.btnRefreshList.setIcon(qtawesome.icon('fa5s.sync-alt', options=icon_options))
         fm = ui.labFilter.fontMetrics()
         icon_size = QSize(fm.height(), fm.height())
         ui.labFilter.setPixmap(qtawesome.icon('fa5s.filter', options=[{'color': '#1b8c90'}]).pixmap(icon_size))
@@ -421,6 +422,13 @@ class MainWindow(QMainWindow):
 
 
     @pyqtSlot()
+    def on_btnRefreshList_clicked(self):
+        self.reloadQv2rayConfigs()
+        self.populateGroupNames()
+        self.populateNodeListLeft()
+
+
+    @pyqtSlot()
     def on_btnSettings_clicked(self):
         w = SettingsForm(self)
         if(w.exec() == QDialog.Accepted):
@@ -440,6 +448,8 @@ class MainWindow(QMainWindow):
         if(w.exec() == QDialog.Accepted):
             pass
 
+        self.reloadQv2rayConfigs()
+
 
     @pyqtSlot()
     def on_btnQv2rayBalancer_clicked(self):
@@ -450,3 +460,5 @@ class MainWindow(QMainWindow):
         w = Qv2rayBalancerForm(self)
         if(w.exec() == QDialog.Accepted):
             pass
+
+        self.reloadQv2rayConfigs()

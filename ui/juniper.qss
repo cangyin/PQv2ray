@@ -99,15 +99,17 @@ QPushButton::pressed{
     margin-top: 20px;
 }
 
-#btnSettings {
+#btnRefreshList, #btnSettings {
     background-color: #f0f0f0;
     color: black;
     font-weight: 700;
+    padding: 2px;
+    margin: 0px;
 }
-#btnSettings:hover {
+#btnRefreshList:hover, #btnSettings:hover {
     background-color: lightgray;
 }
-#btnSettings:pressed {
+#btnRefreshList:pressed, #btnSettings:pressed {
     background-color: #93c9cc;
     color: white;
 }
