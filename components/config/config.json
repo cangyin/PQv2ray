@@ -5,6 +5,7 @@
         "node_list_font_family": null,
         "node_list_font_size": 11,
         "node_repr_format": "{node.group} ◎ {node.name}",
+        "stylesheet": "ui/juniper.qss",
         "json_highlight": true,
         "json_highlight_colors": {
             "key": "#9cdcfe",

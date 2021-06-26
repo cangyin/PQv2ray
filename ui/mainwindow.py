@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
 
 
     def reloadStyleSheet(self) -> None:
-        styleSheet = open('ui/style.qss', 'rt', encoding='UTF-8').read()
+        styleSheet = open(self.config['ui']['stylesheet'], 'rt', encoding='UTF-8').read()
 
         uiconfig = self.config['ui']
         for key in uiconfig:
