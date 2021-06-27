@@ -1,7 +1,7 @@
 import os, sys
 import re
 from os import path
-from typing import List, Tuple, Dict, Set, Union, Optional
+from typing import List, Tuple, Dict, Set, Union, Optional, Iterable
 from copy import deepcopy
 import functools
 import json
@@ -14,15 +14,19 @@ from shutil import copy as copy_file
 
 import psutil
 
-logging.basicConfig(
-    format="[%(module)s: %(lineno)d] %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-logger = logging.getLogger('utils')
-
-
 file_encoding = 'UTF-8'
 qv2ray_bin_name = 'qv2ray.exe' if sys.platform == 'win32' else 'qv2ray'
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(levelname)s][%(module)s:%(lineno)d] %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('./log.txt', 'wt', encoding=file_encoding)
+    ]
+)
+logger = logging.getLogger(__name__)
 
 
 def load_json(file :str):
@@ -42,6 +46,9 @@ def read_text_file(file :str):
     except Exception as e:
         logger.error('Error opening file: \n' + repr(e))
         return ''
+
+def clear_cache():
+    read_text_file.cache_clear()
 
 def write_text_file(file :str, text :str, mkdirs :bool=True):
     if mkdirs:
@@ -82,8 +89,23 @@ def _format_json_obj(repr_obj, d):
 def format_json_obj(repr_obj, d):
     return _format_json_obj(deepcopy(repr_obj), d)
 
-def deduplicate(l):
-    return list(dict.fromkeys(l))
+def deduplicate(l, key=None):
+    if key is None:
+        return list(dict.fromkeys(l))
+    else:
+        keys = (key(i) for i in l)
+        d = dict.fromkeys(keys)
+        if len(d) != len(l):
+            new_l = []
+            new_keys = []
+            for i in l:
+                k = key(i)
+                if k not in new_keys:
+                    new_l.append(i)
+                    new_keys.append(k)
+            return new_l
+        else:
+            return l
 
 def process_exists(name :str):
     return name in (p.name() for p in psutil.process_iter())
