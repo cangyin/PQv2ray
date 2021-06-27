@@ -1,27 +1,17 @@
-from random import choices
-from string import ascii_lowercase
-
-# PyQt5 imports
-from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-from ui.mainwin import *
-from ui.qv2ray_balancer import *
-from ui.qv2ray_multi_port import *
-from ui.settings import *
+from .qv2ray_multi_port import Ui_Qv2rayMultiPortForm
 
-from components import RunOnce, Node, NodeListModel
-from components.utils import *
-from components import generators as gen
+from components import *
 
 
 class Qv2rayMultiPortForm(QDialog):
 
-    def __init__(self, parent: Optional['QWidget'], flags: Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType]=Qt.Dialog) -> None:
+    def __init__(self, parent: Optional['QWidget'], flags: Union[Qt.WindowFlags, Qt.WindowType]=Qt.Dialog) -> None:
         super().__init__(parent=parent, flags=flags)
-        self.config = parent.config['multi_port_forwarding']
+        self.config = g_config['multi_port']
         self.nodes = parent.getUserPickedNodes()
         self.group_names = parent.group_names
 
@@ -37,17 +27,16 @@ class Qv2rayMultiPortForm(QDialog):
         ui.comboRouteScheme.addItems(self.route_schemes)
 
         ui.comboUpdateNodeName.link_comboBox(ui.comboUpdateNodeGroup)
-        ui.comboUpdateNodeName.set_selector(lambda node: self.parent().isQv2rayComplexConfig(node))
+        ui.comboUpdateNodeName.set_selector(lambda node: node.is_qv2ray_complex_node())
         ui.comboUpdateNodeGroup.addItems(self.group_names)
 
         ui.comboAutoImportGroup.addItems(self.group_names)
 
         picked_groups = deduplicate([node.group for node in self.nodes])
         if len(picked_groups) == 1:
-            auto_import_name = '多入站 - ' + picked_groups[0] + ' - ' + str(len(self.nodes))
+            ui.editAutoImportName.setText( f'多入站 - {picked_groups[0]} - {len(self.nodes)}' )
         else:
-            auto_import_name = '多入站 - (多个分组) - ' +  str(len(self.nodes))
-        ui.editAutoImportName.setText(auto_import_name)
+            ui.editAutoImportName.setText( f'多入站 - (多个分组) - {len(self.nodes)}' )
 
     @property
     def ports(self):
@@ -113,7 +102,7 @@ class Qv2rayMultiPortForm(QDialog):
                     ][ui.comboBlockRuleScheme.currentIndex()]
             self.setHelpText(help_text)
 
-    def event(self, a0: QtCore.QEvent) -> bool:
+    def event(self, a0: QEvent) -> bool:
         self.updateInstantHoverHelp()
         return super().event(a0)
 
@@ -146,7 +135,7 @@ class Qv2rayMultiPortForm(QDialog):
                 192.168.1.0/24
             ''')
         elif i == 2: # rules from Qv2ray
-            rules = self.parent().qv2ray_conf['defaultRouteConfig']['routeConfig']
+            rules = gen.qv2ray_conf['defaultRouteConfig']['routeConfig']
             blockRulesDomain = '\n'.join( rules['domains'].get('block', []) )
             blockRulesIp = '\n'.join( rules['ips'].get('block', []) )
 
@@ -170,8 +159,8 @@ class Qv2rayMultiPortForm(QDialog):
                 117.131.104.7
             ''')
         elif i >= 2: # rules from Qv2ray
-            key = ['direct', 'proxy', 'block'][i-2]
-            rules = self.parent().qv2ray_conf['defaultRouteConfig']['routeConfig']
+            key = gen.outbound_tag_classes[i-2]
+            rules = gen.qv2ray_conf['defaultRouteConfig']['routeConfig']
             rulesDomain = '\n'.join( rules['domains'].get(key, []) )
             rulesIp = '\n'.join( rules['ips'].get(key, []) )
             
@@ -203,23 +192,23 @@ class Qv2rayMultiPortForm(QDialog):
         ui = self.ui
 
         # generate ports-nodes mapping report
-        self.generate_mapping_report()
+        self.generateMappingReport()
 
         # generate SwitchyOmega file
         if ui.groupBoxSw.isChecked():
-            ok = self.generate_switchyomega_config()
+            ok = self.generateSwitchyomegaConfig()
             if not ok:
                 return
 
         # generate Qv2ray complex config
-        shouldClose = self.generate_qv2ray_multi_port_config()
+        shouldClose = self.generateQv2rayMultiPortConfig()
 
         # finally, close the dialog
         if shouldClose:
             self.accept()
 
 
-    def generate_mapping_report(self):
+    def generateMappingReport(self):
         mapping_template = load_json(self.config['mapping_report_template_path'])
         nodes = self.nodes
         ports = self.ports
@@ -239,7 +228,7 @@ class Qv2rayMultiPortForm(QDialog):
         dump_json(result, self.config['mapping_report_result_path'])
 
 
-    def generate_switchyomega_config(self):
+    def generateSwitchyomegaConfig(self):
         bak_file = self.ui.editSwFile.text()
         if not bak_file or not path.exists(bak_file):
             QMessageBox.warning(self, "未选择 SwitchyOmega 文件", "请选择由 SwitchyOmega 插件导出的备份文件")
@@ -260,7 +249,7 @@ class Qv2rayMultiPortForm(QDialog):
         return True
 
 
-    def generate_qv2ray_multi_port_config(self):
+    def generateQv2rayMultiPortConfig(self):
         ui = self.ui
         route_rules = {
             'domains': ui.txtRulesDomain.toPlainText().strip().splitlines(),
@@ -282,7 +271,7 @@ class Qv2rayMultiPortForm(QDialog):
             inbound_template=inbound_template,
             route_rules=route_rules,
             block_rules=block_rules,
-            formats=self.config)
+        )
         
         # always write result to file
         dump_json(qv2ray_result, self.config['qv2ray_result_path'])

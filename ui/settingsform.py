@@ -1,19 +1,13 @@
 
 # PyQt5 imports
-from threading import Event
 from time import time
-from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-from ui.mainwin import *
-from ui.qv2ray_balancer import *
-from ui.qv2ray_multi_port import *
-from ui.settings import *
+from .settings import Ui_Settings
 
-from components.utils import *
-
+from components import *
 
 from pyqtconfig import ConfigManager
 
@@ -29,21 +23,20 @@ class SettingsForm(QDialog):
             <p><strong>node.group_id</strong>: 节点所在分组的ID；</p>
         </div>'''
 
-    def __init__(self, parent: Optional['QWidget'], flags: Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType]=Qt.Dialog|Qt.MSWindowsFixedSizeDialogHint) -> None:
+    def __init__(self, parent: Optional['QWidget'], flags: Union[Qt.WindowFlags, Qt.WindowType]=Qt.Dialog|Qt.MSWindowsFixedSizeDialogHint) -> None:
         super().__init__(parent=parent, flags=flags)
         
         self.hover_help_current_widget = None
 
-        ui = Ui_Settings()
-        self.ui = ui
+        self.ui = Ui_Settings()
+        ui = self.ui
         ui.setupUi(self)
 
-        config = deepcopy( parent.config )
-        self.config = config
+        self.config = deepcopy( g_config )
 
         # # tab 1
         self.config_mgr_ui = ConfigManager()
-        self.config_mgr_ui.set_defaults(config['ui'])
+        self.config_mgr_ui.set_defaults(self.config['ui'])
         self.config_mgr_ui.add_handlers({
             'application_font_family': ui.fontComboAppFont,
             'application_font_size': ui.spinAppFontSize,
@@ -54,22 +47,23 @@ class SettingsForm(QDialog):
         })
         # # tab 2, Qv2ray
         self.config_mgr_qv2ray = ConfigManager()
-        self.config_mgr_qv2ray.set_defaults(config['qv2ray'])
+        self.config_mgr_qv2ray.set_defaults(self.config['qv2ray'])
         self.config_mgr_qv2ray.add_handlers({
             'folder': ui.editQvFolder,
             'auto_start_qv2ray': ui.chkAutoStartQv2ray,
         })
         # # tab 3, v2ray
         self.config_mgr_v2ray = ConfigManager()
-        self.config_mgr_v2ray.set_defaults(config['v2ray'])
+        self.config_mgr_v2ray.set_defaults(self.config['v2ray'])
         self.config_mgr_v2ray.add_handlers({
             'domainMatcher': ui.comboDomainMatcher,
             'balancer_strategy': ui.comboBalancerStrategy,
             'selector_use_prefixes': ui.chkSelectorPrefix,
+            "domainStrategy": ui.comboDomainStrategy,
         })
         # # tab 4
         self.config_mgr_mp = ConfigManager()
-        self.config_mgr_mp.set_defaults(config['multi_port_forwarding'])
+        self.config_mgr_mp.set_defaults(self.config['multi_port'])
         self.config_mgr_mp.add_handlers({
             'default_port_start': ui.spinDefaultPortStart,
             'default_port_type': ui.comboPortType,
@@ -82,7 +76,7 @@ class SettingsForm(QDialog):
         })
         # # tab 5
         self.config_mgr_bl = ConfigManager()
-        self.config_mgr_bl.set_defaults(config['balancer'])
+        self.config_mgr_bl.set_defaults(self.config['balancer'])
         self.config_mgr_bl.add_handlers({
             'outbound_tag_format': ui.editOutboundTagFmt2,
             'qv2ray_result_path': ui.editQvComplexConfigResultPath2,
@@ -148,23 +142,22 @@ class SettingsForm(QDialog):
             if help_text:
                self.setHelpText(help_text)
 
-    def event(self, a0: QtCore.QEvent) -> bool:
+    def event(self, a0: QEvent) -> bool:
         self.updateInstantHoverHelp()
         return super().event(a0)
 
     @pyqtSlot()
     def on_btnSave_clicked(self):
-        config = self.config
         # # tab 1
-        config['ui'] = self.config_mgr_ui.as_dict()
+        self.config['ui'] = self.config_mgr_ui.as_dict()
         # # tab 2
-        config['qv2ray'] = self.config_mgr_qv2ray.as_dict()
+        self.config['qv2ray'] = self.config_mgr_qv2ray.as_dict()
         # # tab 3
-        config['v2ray'] = self.config_mgr_v2ray.as_dict()
+        self.config['v2ray'] = self.config_mgr_v2ray.as_dict()
         # # tab 4
-        config['multi_port_forwarding'] = self.config_mgr_mp.as_dict()
+        self.config['multi_port'] = self.config_mgr_mp.as_dict()
         # # tab 5
-        config['balancer'] = self.config_mgr_bl.as_dict()
+        self.config['balancer'] = self.config_mgr_bl.as_dict()
 
         self.accept()
 

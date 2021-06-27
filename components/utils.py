@@ -34,7 +34,7 @@ def dump_json(obj, file :str):
 def dump_jsons(obj):
     return json.dumps(obj, ensure_ascii=False, indent=4)
 
-@functools.lru_cache(maxsize=128)
+@functools.lru_cache(maxsize=None)
 def read_text_file(file :str):
     try:
         with open(file, 'rt', encoding=file_encoding) as f:
@@ -102,11 +102,11 @@ def start_qv2ray_process(qv2ray_folder :str):
     return start_process('\"' + path.join(qv2ray_folder, qv2ray_bin_name) + '\"')
 
 def kill_process(name):
-    # TODO
+    # TODO kill_process: impl
     pass
 
 def relative_path(_path :str) -> str:
-    # TODO: test on linux
+    # TODO relative_path: test on linux
     curdirve = path.splitdrive(path.realpath('.'))[0].upper()
     tardrive = path.splitdrive(_path)[0].upper()
     if curdirve == tardrive:

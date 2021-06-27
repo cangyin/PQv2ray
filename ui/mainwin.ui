@@ -304,6 +304,9 @@
          </item>
          <item>
           <widget class="QPushButton" name="btnRefreshList">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -380,16 +383,6 @@
         <widget class="QPushButton" name="btnQv2rayBalancer">
          <property name="text">
           <string>负载均衡</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnQv2rayMultiPortBalancer">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>多端口负载均衡</string>
          </property>
         </widget>
        </item>

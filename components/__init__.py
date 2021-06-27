@@ -1,7 +1,9 @@
-from .node import *
+from .node import Node
 from .nodelistmodel import *
 from .runonce import *
 from .utils import *
-
 from .mytrie import MyTrie
-# from .generators import *
+
+from . import generators as gen
+
+from .config import g_config

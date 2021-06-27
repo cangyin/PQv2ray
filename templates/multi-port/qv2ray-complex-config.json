@@ -10,6 +10,7 @@
     "routing": {
         "balancers": [],
         "domainStrategy": "",
+        "domainMatcher": "DOMAIN MATCHER",
         "rules": [{
             "QV2RAY_RULE_ENABLED": true,
             "QV2RAY_RULE_TAG": "{port -> tag}",

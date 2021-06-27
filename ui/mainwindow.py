@@ -1,26 +1,18 @@
-
-# PyQt5 imports
-from genericpath import exists
-from PyQt5 import QtCore, QtWidgets, QtGui
+from components.node import NodeComplexityType
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-import qtawesome
-
-from ui.mainwin import *
-from ui.qv2ray_balancer import *
-from ui.qv2ray_multi_port import *
-from ui.settings import *
-
-from components import RunOnce, Node, NodeListModel
-from components.config import load_config
-from components import generators as gen
+from .mainwin import Ui_MainWindow
 
 from .qv2raybalancerform import *
 from .qv2raymultiportform import *
 from .settingsform import *
 from .textcontentform import *
+
+import qtawesome
+
+from components import *
 
 import time
 
@@ -28,8 +20,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.config = load_config('config.json')
-        Node.set_default_format(self.config['ui']['node_repr_format'])
+        # TODO promote config to global
+        Node.set_default_format(g_config['ui']['node_repr_format'])
         
         self.model_left = NodeListModel(0, self)
         self.model_right = NodeListModel(0, self)
@@ -45,7 +37,7 @@ class MainWindow(QMainWindow):
         ui = self.ui
         self.reloadStyleSheet()
         
-        ui.editQvConfigFolder.setText(self.config['qv2ray']['config_folder'])
+        ui.editQvConfigFolder.setText(g_config['qv2ray']['config_folder'])
 
         icon_options = [{
             'scale_factor': 0.8,
@@ -80,9 +72,9 @@ class MainWindow(QMainWindow):
 
 
     def reloadStyleSheet(self) -> None:
-        styleSheet = open(self.config['ui']['stylesheet'], 'rt', encoding='UTF-8').read()
+        styleSheet = open(g_config['ui']['stylesheet'], 'rt', encoding='UTF-8').read()
 
-        uiconfig = self.config['ui']
+        uiconfig = g_config['ui']
         for key in uiconfig:
             styleSheet = styleSheet.replace('<' + key +'>', str(uiconfig[key]))
 
@@ -90,10 +82,10 @@ class MainWindow(QMainWindow):
 
 
     def saveConfig(self):
-        dump_json(self.config, 'config.json')
+        dump_json(g_config, 'config.json')
 
 
-    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+    def closeEvent(self, a0: QCloseEvent) -> None:
         self.saveConfig()
         return super().closeEvent(a0)
 
@@ -132,7 +124,7 @@ class MainWindow(QMainWindow):
 
 
     def updateNodeLists(self):
-        Node.set_default_format(self.config['ui']['node_repr_format'])
+        Node.set_default_format(g_config['ui']['node_repr_format'])
         # left
         self.populateNodeListLeft()
         # right
@@ -162,40 +154,21 @@ class MainWindow(QMainWindow):
         valid = self.checkQv2rayConfigFolder(qv_config_folder)
 
         if valid:
-            self.config['qv2ray']['config_folder'] = qv_config_folder
-        ui.groupBoxBtns.setEnabled(valid)
-        ui.comboGroups.setEnabled(valid)
-        ui.nodeSelectorPane.setEnabled(valid)
+            g_config['qv2ray']['config_folder'] = qv_config_folder
+
+        for widget in (
+            ui.groupBoxBtns,
+            ui.comboGroups,
+            ui.btnRefreshList,
+            ui.nodeSelectorPane
+        ):
+            widget.setEnabled(valid)
         return valid
         
 
-    def reloadQv2rayConfigs(self):
-        folder = self.config['qv2ray']['config_folder']
-        gen.groups = load_json( folder + '/groups.json' )
-        gen.connections = load_json( folder + '/connections.json' )
-        gen.qv2ray_multi_port_template = load_json( self.config['multi_port_forwarding']['qv2ray_template_path'] )
-        gen.qv2ray_balancer_template = load_json( self.config['balancer']['qv2ray_template_path'] )
-        gen.inbound_http_template = load_json( self.config["v2ray_object_templates"]["inbound_http"] )
-        gen.inbound_socks_template = load_json( self.config["v2ray_object_templates"]["inbound_socks"] )
-        gen.outbound_block_template = load_json( self.config["v2ray_object_templates"]["outbound_block"] )
-        gen.outbound_direct_template = load_json( self.config["v2ray_object_templates"]["outbound_direct"] )
-        self.qv2ray_conf = load_json( folder + '/Qv2ray.conf' )
-
-
-    def isQv2rayComplexConfig(self, node :Node):
-        config_path = self.config['qv2ray']['config_folder'] + f'/connections/{node.id}.qv2ray.json'
-        bExist = path.exists(config_path)
-        config = {} if not bExist else load_json( config_path )
-        bRule = ('routing' in config) and ('rules' in config['routing'])
-        bRules = bRule and len(config['routing']['rules']) > 0
-        bInboundCount  = ('inbounds' in config) and len(config['inbounds']) > 0
-        bOutboundCount = ('outbounds' in config) and len(config['outbounds']) > 1
-        return bRules or bInboundCount or bOutboundCount
-
-
     def jsonHightlightAsRichText(self, text :str):
         # prepare styles
-        colors = self.config['ui']['json_highlight_colors']
+        colors = g_config['ui']['json_highlight_colors']
         key_style = f'style="color: {colors["key"]};"'
         value_style1 = f'style="color: {colors["value1"]};"'
         value_style2 = f'style="color: {colors["value2"]};"'
@@ -213,7 +186,7 @@ class MainWindow(QMainWindow):
         
         w = TextContentForm(self, title)
         w.label.setText(description)
-        if self.config['ui']['json_highlight']:
+        if g_config['ui']['json_highlight']:
             # rich text
             w.textEdit.setHtml(self.jsonHightlightAsRichText(text))
             w.textEdit.setVisible(True)
@@ -235,7 +208,7 @@ class MainWindow(QMainWindow):
                 "lastUpdatedDate": 0,
             }
         })
-        qv2ray_config_folder = self.config['qv2ray']['config_folder']
+        qv2ray_config_folder = g_config['qv2ray']['config_folder']
         dump_json(gen.groups, qv2ray_config_folder + '/groups.json')
         dump_json(gen.connections, qv2ray_config_folder + '/connections.json')
         copy_file(qv2ray_node_file, qv2ray_config_folder + f'/connections/{node.id}.qv2ray.json')
@@ -248,19 +221,19 @@ class MainWindow(QMainWindow):
 
         # check process
         while process_exists('qv2ray.exe'):
-            msg = '请您退出 Qv2ray 程序。' if not self.config['qv2ray']['auto_start_qv2ray'] else '请您退出 Qv2ray 程序，节点导入后会自动重启 Qv2ray。'
+            msg = '请您退出 Qv2ray 程序。' if not g_config['qv2ray']['auto_start_qv2ray'] else '请您退出 Qv2ray 程序，节点导入后会自动重启 Qv2ray。'
             res = QMessageBox.information(self, '请退出 Qv2ray 程序', msg, buttons=QMessageBox.Ok | QMessageBox.Close)
             if res != QMessageBox.Ok:
                 return False
 
-        # reload Qv2ray configs after it exits.
-        self.reloadQv2rayConfigs()
+        # reload low level configs after Qv2ray exits.
+        gen.load()
 
         # do merge
         self.addNodeToQv2ray(new_node, qv2ray_node_file)
         
-        if self.config['qv2ray']['auto_start_qv2ray']:
-            start_qv2ray_process(self.config['qv2ray']['folder'])
+        if g_config['qv2ray']['auto_start_qv2ray']:
+            start_qv2ray_process(g_config['qv2ray']['folder'])
             time.sleep(0.5)
 
         if qv2ray_process_exists():
@@ -271,7 +244,7 @@ class MainWindow(QMainWindow):
 
 
     def replaceNodeInQv2ray(self, node_id :str, node_json :dict):
-        dump_json(node_json, self.config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json')
+        dump_json(node_json, g_config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json')
         res = QMessageBox.information(self, '完成', '配置更新完成，您需要重启Qv2ray。', buttons=QMessageBox.Ok | QMessageBox.Close)
         return res == QMessageBox.Ok
 
@@ -279,7 +252,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def on_editQvConfigFolder_textChanged(self, text):
         if self.checkQv2rayConfigFolderUi():
-            self.reloadQv2rayConfigs()
+            gen.load()
             self.populateGroupNames()
         else:
             self.model_right.resetNodes()
@@ -288,7 +261,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_btnBrwsQvConfigFolder_clicked(self):
         ui = self.ui
-        qv_config_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 配置文件夹', self.config['qv2ray']['config_folder'])
+        qv_config_folder = QFileDialog.getExistingDirectory(self, '选择 Qv2ray 配置文件夹', g_config['qv2ray']['config_folder'])
         if qv_config_folder:
             qv_config_folder = relative_path(qv_config_folder)
             ui.editQvConfigFolder.setText(qv_config_folder) # triggers on_editQvConfigFolder_textChanged
@@ -305,7 +278,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_btnAppendToRight_clicked(self):
-        ui = self.ui
         nodes_right = self.model_right.getNodes()
         ignored_nodes = []
 
@@ -313,8 +285,7 @@ class MainWindow(QMainWindow):
         selectedRows = sorted(selectedRows, key=lambda modelIndex :modelIndex.row())
         for index in selectedRows:
             node = self.model_left.getNode(index.row())
-            # check if Qv2ray complex config
-            if node and self.isQv2rayComplexConfig(node):
+            if node.complexity_type == NodeComplexityType.General:
                 ignored_nodes.append(node)
                 continue
             if not node in nodes_right:
@@ -322,11 +293,7 @@ class MainWindow(QMainWindow):
 
         if ignored_nodes:
             nodes_str = '<br/>'.join([node.name for node in ignored_nodes])
-            if len(ignored_nodes) > 1:
-                msg = f'您选中的这些节点： <br/><br/><strong>{nodes_str}</strong><br/><br/> 本身是 Qv2ray 的复杂配置节点，已忽略！'
-            else:
-                msg = f'您选中的节点 <strong>{nodes_str}</strong> 本身是 Qv2ray 的复杂配置节点，已忽略！'
-            QMessageBox.information(self, '选中了复杂配置节点', msg)
+            QMessageBox.information(self, '无法处理的节点', f'您选中的这些节点： <br/><br/><strong>{nodes_str}</strong><br/><br/> 无法处理，已被忽略！')
 
 
     @pyqtSlot()
@@ -359,8 +326,8 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QModelIndex)
     def on_listViewRight_doubleClicked(self, index :QModelIndex):
-        self.selection_right.clear()
-        self.model_right.removeNode(index.row())
+        self.selection_right.select(index, QItemSelectionModel.ClearAndSelect)
+        self.on_btnDeleteFromRight_clicked()
 
 
     @pyqtSlot(QKeyEvent)
@@ -368,6 +335,12 @@ class MainWindow(QMainWindow):
         if e.key() == Qt.Key_Delete:
             self.on_btnDeleteFromRight_clicked()
 
+
+    # @pyqtSlot("QModelIndexList")
+    def on_listViewRight_indexesMoved(indexes ):
+        print(
+            indexes
+        )
 
     @pyqtSlot(str)
     def on_editFilter_textChanged(self, text):
@@ -423,7 +396,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_btnRefreshList_clicked(self):
-        self.reloadQv2rayConfigs()
+        gen.load()
         self.populateGroupNames()
         self.populateNodeListLeft()
 
@@ -432,7 +405,7 @@ class MainWindow(QMainWindow):
     def on_btnSettings_clicked(self):
         w = SettingsForm(self)
         if(w.exec() == QDialog.Accepted):
-            self.config.update(w.config)
+            g_config.update(w.config)
             self.saveConfig()
             self.reloadStyleSheet()
             self.updateNodeLists()
@@ -448,8 +421,6 @@ class MainWindow(QMainWindow):
         if(w.exec() == QDialog.Accepted):
             pass
 
-        self.reloadQv2rayConfigs()
-
 
     @pyqtSlot()
     def on_btnQv2rayBalancer_clicked(self):
@@ -461,4 +432,3 @@ class MainWindow(QMainWindow):
         if(w.exec() == QDialog.Accepted):
             pass
 
-        self.reloadQv2rayConfigs()

@@ -19,30 +19,23 @@
         "auto_start_qv2ray": false
     },
     "v2ray": {
-        "domainMatchers": [
-            "linear",
-            "mph"
-        ],
         "domainMatcher": "mph",
-        "balancer_strategies": [
-            "random ",
-            "leastPing"
-        ],
         "balancer_strategy": "leastPing",
-        "selector_use_prefixes": true
+        "selector_use_prefixes": true,
+        "domainStrategy": "AsIs"
     },
-    "multi_port_forwarding": {
+    "multi_port": {
         "default_port_start": 3000,
         "default_port_type": "SOCKS5",
         "inbound_tag_format": "SOCKS5 - {port}",
         "rule_tag_format": "{port} -> {node.group} ◎ {node.name}",
         "outbound_tag_format": "{node.group} ◎ {node.name}",
         "mapping_report_result_path": "results/result-mapping.result.json",
-        "mapping_report_template_path": "templates/multi-port-forwarding/result-mapping-as-dict.json",
-        "qv2ray_result_path": "results/multi-port-forwarding.result.json",
-        "qv2ray_template_path": "templates/multi-port-forwarding/qv2ray-complex-config.json",
+        "mapping_report_template_path": "templates/multi-port/result-mapping-as-dict.json",
+        "qv2ray_result_path": "results/multi-port.result.json",
+        "qv2ray_template_path": "templates/multi-port/qv2ray-complex-config.json",
         "switchyomega_result_path": "results/OmegaOptions.result.json",
-        "switchyomega_proxy_template": "templates/multi-port-forwarding/switchyomega-single-proxy.json"
+        "switchyomega_proxy_template": "templates/multi-port/switchyomega-single-proxy.json"
     },
     "balancer": {
         "outbound_tag_format": "{node.group} ◎ {node.name}",

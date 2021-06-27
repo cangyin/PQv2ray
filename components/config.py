@@ -1,8 +1,10 @@
 import collections
-import os
-import sys
+import os, sys
 
 from .utils import load_json
+
+# global config object
+g_config = {}
 
 
 class ConfigError(Exception):
@@ -62,3 +64,6 @@ def __update_dict(orig, update):
             __update_dict(orig[key], value)
         else:
             orig[key] = value
+
+
+g_config.update( load_config('config.json') )

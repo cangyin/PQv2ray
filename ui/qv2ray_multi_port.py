@@ -314,7 +314,7 @@ class Ui_Qv2rayMultiPortForm(object):
 
     def retranslateUi(self, Qv2rayMultiPortForm):
         _translate = QtCore.QCoreApplication.translate
-        Qv2rayMultiPortForm.setWindowTitle(_translate("Qv2rayMultiPortForm", "Qv2ray 多端口配置"))
+        Qv2rayMultiPortForm.setWindowTitle(_translate("Qv2rayMultiPortForm", "Qv2ray 多入站配置"))
         self.groupBoxImport.setTitle(_translate("Qv2rayMultiPortForm", "导入Qv2ray"))
         self.rbtnUpdateNode.setText(_translate("Qv2rayMultiPortForm", "更新已有节点"))
         self.rbtnAutoImport.setText(_translate("Qv2rayMultiPortForm", "导入为新节点"))

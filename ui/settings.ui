@@ -14,31 +14,6 @@
    <string>设置</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_8">
-   <item row="0" column="1">
-    <widget class="QGroupBox" name="groupBoxHelp">
-     <property name="title">
-      <string>说明</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="topMargin">
-       <number>20</number>
-      </property>
-      <item>
-       <widget class="QTextEdit" name="txtHelp">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="1" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -70,10 +45,35 @@
      </item>
     </layout>
    </item>
+   <item row="0" column="1">
+    <widget class="QGroupBox" name="groupBoxHelp">
+     <property name="title">
+      <string>说明</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="topMargin">
+       <number>20</number>
+      </property>
+      <item>
+       <widget class="QTextEdit" name="txtHelp">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidgetSettings">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -348,24 +348,44 @@
         <property name="spacing">
          <number>12</number>
         </property>
-        <item row="0" column="2">
-         <spacer name="horizontalSpacer_5">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_11">
           <property name="text">
            <string>域名匹配算法</string>
           </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QComboBox" name="comboDomainStrategy">
+          <item>
+           <property name="text">
+            <string>AsIs</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>IPIfNonMatch</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>IPOnDemand</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="comboBalancerStrategy">
+          <item>
+           <property name="text">
+            <string>random</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>leastPing</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="0" column="1">
@@ -389,21 +409,30 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="comboBalancerStrategy">
-          <item>
-           <property name="text">
-            <string>random</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>leastPing</string>
-           </property>
-          </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>域名策略</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="2">
+        <item row="2" column="2">
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="1" column="2">
          <widget class="QCheckBox" name="chkSelectorPrefix">
           <property name="text">
            <string>负载均衡选择器列表精简</string>

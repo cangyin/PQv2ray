@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Qv2ray 多端口配置</string>
+   <string>Qv2ray 多入站配置</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
    <property name="verticalSpacing">

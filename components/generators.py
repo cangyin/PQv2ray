@@ -1,8 +1,7 @@
-from components.mytrie import common_prefixes
-import json
-from copy import deepcopy
 from .utils import *
 from .node import Node
+from .config import g_config
+from .mytrie import common_prefixes
 
 from random import choices
 from string import ascii_lowercase
@@ -11,6 +10,7 @@ from string import ascii_lowercase
 
 groups = {}
 connections = {}
+qv2ray_conf = {}
 
 default_group_id = '000000000000'
 
@@ -23,15 +23,27 @@ inbound_socks_template = {}
 outbound_block_template = {}
 outbound_direct_template = {}
 
-switchyomega_template = {}
-
 outbound_direct_tag = 'direct'
 outbound_proxy_tag = 'proxy'
 outbound_block_tag = 'block'
+outbound_tag_classes = (outbound_direct_tag, outbound_proxy_tag, outbound_block_tag)
 
 # special nodes
 block_node = Node(id='0'*12, name=outbound_block_tag)
 direct_node = Node(id='1'*12, name=outbound_direct_tag)
+
+
+def load():
+    folder = g_config['qv2ray']['config_folder']
+    groups.update( load_json(folder + '/groups.json') )
+    connections.update( load_json(folder + '/connections.json') )
+    qv2ray_conf.update( load_json(folder + '/Qv2ray.conf') )
+    qv2ray_multi_port_template.update( load_json(g_config['multi_port']['qv2ray_template_path']) )
+    qv2ray_balancer_template.update( load_json(g_config['balancer']['qv2ray_template_path']) )
+    inbound_http_template.update( load_json(g_config["v2ray_object_templates"]["inbound_http"]) )
+    inbound_socks_template.update( load_json(g_config["v2ray_object_templates"]["inbound_socks"]) )
+    outbound_block_template.update( load_json(g_config["v2ray_object_templates"]["outbound_block"]) )
+    outbound_direct_template.update( load_json(g_config["v2ray_object_templates"]["outbound_direct"]) )
 
 
 def get_display_name(connection_id):
@@ -70,15 +82,29 @@ def get_random_node_id():
     return ''.join( choices(ascii_lowercase, k=12) )
 
 
+def prepare_qv2ray_multi_port_template():
+    qv2ray_multi_port_template.update({
+        "PQV2RAY_META": {
+            "type": "multi-port"
+        }
+    })
+    routing = qv2ray_multi_port_template['routing']
+    routing.update({
+        'domainMatcher': g_config['v2ray']['domainMatcher'],
+        'domainStrategy': g_config['v2ray']['domainStrategy']
+    })
+
+
 def generate_qv2ray_multi_port_config(
         nodes :List[Node],
         ports :List[int],
         inbound_template :dict,
         route_rules=[],
         block_rules=[],
-        formats={}
     ):
-    formats = deepcopy(formats)
+    prepare_qv2ray_multi_port_template()
+
+    formats = deepcopy(g_config['multi_port'])
 
     # inbounds
     inbound_template = inbound_template # qv2ray_multi_port_template['inbounds'][0]
@@ -177,17 +203,22 @@ def generate_qv2ray_multi_port_config(
                 'ip': block_rules['ips']
             })
             result['routing']['rules'].insert(0, ruleIp)
-        result['outbounds'].append({"QV2RAY_OUTBOUND_METADATA": {},"mux": {},"protocol": "blackhole","sendThrough": "0.0.0.0","settings": {"response": {"type": "none"}},"streamSettings": {},"tag": "block"})
-
+        result['outbounds'].append(outbound_block_template)
+ 
     return result
 
 
-
-def prepare_qv2ray_balancer_template(config):
+def prepare_qv2ray_balancer_template():
+    qv2ray_balancer_template.update({
+        "PQV2RAY_META": {
+            "type": "balancer"
+        }
+    })
+    routing = qv2ray_balancer_template['routing']
     # balancer strategy type
-    qv2ray_balancer_template['routing']['balancers'][0]['strategy']['type'] = config['v2ray']['balancer_strategy']
+    routing['balancers'][0]['strategy']['type'] = g_config['v2ray']['balancer_strategy']
     ## domainMatcher
-    qv2ray_balancer_template['routing']['domainMatcher'] = config['v2ray']['domainMatcher']
+    routing['domainMatcher'] = g_config['v2ray']['domainMatcher']
 
 
 def generate_qv2ray_balancer_config(
@@ -195,10 +226,9 @@ def generate_qv2ray_balancer_config(
         listenIp,
         ports :dict,
         route_settings=[],    
-        route_type_order = ['block', 'direct', 'proxy'],
+        route_type_order=outbound_tag_classes,
         bypassCN=True,
         bypassLAN=True,
-        config: dict={}
     ):
     '''
         ports = {
@@ -208,12 +238,12 @@ def generate_qv2ray_balancer_config(
     '''
     assert(len(route_type_order) == 3)
 
-    prepare_qv2ray_balancer_template(config)
+    prepare_qv2ray_balancer_template()
     
     # result
     result = deepcopy(qv2ray_balancer_template)
     
-    outbound_tag_format = config['balancer']['outbound_tag_format']
+    outbound_tag_format = g_config['balancer']['outbound_tag_format']
 
     # fix duplicate tag error
     _outbound_tags_d = {}
@@ -273,7 +303,7 @@ def generate_qv2ray_balancer_config(
 
     result['outbounds'] = outbounds
     # common prefixes of tags in selector
-    if config['v2ray']['selector_use_prefixes']:
+    if g_config['v2ray']['selector_use_prefixes']:
         selector = common_prefixes(selector)
 
     result['routing']['balancers'][0]['selector'] = selector
@@ -286,19 +316,19 @@ def generate_qv2ray_balancer_config(
         "type": "field",
         "inboundTag": inbound_tags,
     }
-    for rule_type in route_type_order:
+    for route_type in route_type_order:
         for domain_or_ip in ('ip', 'domain'):
             rule = deepcopy(rule_common)
             rule.update({
-                "QV2RAY_RULE_TAG": f"{rule_type}-{domain_or_ip}",
-                # 'domain': route_settings.get('domains', {}).get(rule_type, [])
-                # 'ip': route_settings.get('ips', {}).get(rule_type, [])
-                domain_or_ip: route_settings.get(domain_or_ip + 's', {}).get(rule_type, [])
+                "QV2RAY_RULE_TAG": f"{route_type}-{domain_or_ip}",
+                # 'domain': route_settings.get('domains', {}).get(route_type, [])
+                # 'ip': route_settings.get('ips', {}).get(route_type, [])
+                domain_or_ip: route_settings.get(domain_or_ip + 's', {}).get(route_type, [])
             })
-            if rule_type == 'proxy':
+            if route_type == outbound_proxy_tag:
                 rule["balancerTag"] = "balancer"
             else: # block, direct
-                rule["outboundTag"] = rule_type
+                rule["outboundTag"] = route_type
             rules.append(rule)
 
     # delete empty rules
@@ -313,19 +343,19 @@ def generate_qv2ray_balancer_config(
         for index_direct, rule in enumerate(rules):
             if rule.get('outboundTag', '') == 'direct':
                 break
-        rules_bypassCN = load_json(config["v2ray_object_templates"]['rules_bypassCN'])
+        rules_bypassCN = load_json(g_config["v2ray_object_templates"]['rules_bypassCN'])
         rules_bypassCN = format_json_obj(rules_bypassCN, globals())
         rules = rules[0:index_direct] + rules_bypassCN + rules[index_direct:]
 
     if bypassLAN:
-        rules_bypassLAN = load_json(config["v2ray_object_templates"]['rules_bypassLAN'])
+        rules_bypassLAN = load_json(g_config["v2ray_object_templates"]['rules_bypassLAN'])
         rules_bypassLAN = format_json_obj(rules_bypassLAN, globals())
         rules = rules_bypassLAN + rules
 
     result['routing']['rules'] = rules
 
     ## balancer stategy type
-    balancer_strategy = config['v2ray']['balancer_strategy']
+    balancer_strategy = g_config['v2ray']['balancer_strategy']
     if balancer_strategy == 'leastPing': # ( v2ray 4.38.0+ )
         observatory = {
             "observatory": {

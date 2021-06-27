@@ -1,4 +1,3 @@
-from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -7,7 +6,7 @@ from components.utils import *
 
 
 class TextContentForm(QDialog):
-    def __init__(self, parent: Optional[QWidget], title='', flags: Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType]=Qt.Dialog) -> None:
+    def __init__(self, parent: Optional[QWidget], title='', flags: Union[Qt.WindowFlags, Qt.WindowType]=Qt.Dialog) -> None:
         super().__init__(parent=parent, flags=flags)
         self.resize(600, 500)
         self.setWindowTitle(title)

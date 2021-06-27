@@ -1,29 +1,25 @@
-# PyQt5 imports
-from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-from ui.qv2ray_balancer import *
+from .qv2ray_balancer import Ui_Qv2rayBalancerForm
 
-from components import Node
-from components.utils import *
-from components import generators as gen
+from components import *
 
 
 class Qv2rayBalancerForm(QDialog):
 
-    def __init__(self, parent: Optional['QWidget'], flags: Union[QtCore.Qt.WindowFlags, QtCore.Qt.WindowType]=Qt.Dialog) -> None:
+    def __init__(self, parent: Optional['QWidget'], flags: Union[Qt.WindowFlags, Qt.WindowType]=Qt.Dialog) -> None:
         super().__init__(parent=parent, flags=flags)
 
-        self.config = parent.config['balancer']
+        self.config = g_config['balancer']
         self.nodes = parent.getUserPickedNodes()
         self.group_names = parent.group_names
 
         self.route_type_mapping = {
-            '阻断': 'block',
-            '代理': 'proxy',
-            '直连': 'direct',
+            '阻断': gen.outbound_block_tag,
+            '代理': gen.outbound_proxy_tag,
+            '直连': gen.outbound_direct_tag,
         }
         # mapping from special groups to nodes
         self.special_group_mapping = {
@@ -39,14 +35,14 @@ class Qv2rayBalancerForm(QDialog):
         ## post setup UI
         ui.comboFallbackOutboundNode.link_comboBox(ui.comboFallbackOutboundGroup)
         ui.comboFallbackOutboundNode.set_special_group_mapping(self.special_group_mapping)
-        ui.comboFallbackOutboundNode.set_selector(lambda node: not self.parent().isQv2rayComplexConfig(node))
+        ui.comboFallbackOutboundNode.set_selector(lambda node: not node.is_qv2ray_complex_node())
 
         ui.comboFallbackOutboundGroup.addItems(self.group_names)
         ui.comboFallbackOutboundGroup.insertSeparator(len(self.group_names))
         ui.comboFallbackOutboundGroup.addItems(self.special_group_mapping)
 
         ui.comboUpdateNodeName.link_comboBox(ui.comboUpdateNodeGroup)
-        ui.comboUpdateNodeName.set_selector(lambda node: self.parent().isQv2rayComplexConfig(node))
+        ui.comboUpdateNodeName.set_selector(lambda node: node.is_qv2ray_complex_node())
         ui.comboUpdateNodeGroup.addItems(self.group_names)
 
         ui.comboAutoImportGroup.addItems(self.group_names)
@@ -59,10 +55,7 @@ class Qv2rayBalancerForm(QDialog):
         else:
             ui.editAutoImportName.setText( f'负载均衡 - (多个分组) - {len(self.nodes)}' )
 
-        parent.reloadQv2rayConfigs()
-        self.qv2ray_conf = parent.qv2ray_conf
-
-        inboundConfig = self.qv2ray_conf.get('inboundConfig', {})
+        inboundConfig = gen.qv2ray_conf.get('inboundConfig', {})
         ui.editListenIp.setText( inboundConfig.get('listenip', '127.0.0.1') )
 
         socks_port = inboundConfig.get('socksSettings', {}).get('port', 1089)
@@ -75,7 +68,7 @@ class Qv2rayBalancerForm(QDialog):
             ui.spinHttpPort.setValue(http_port)
         ui.chkHttpPort.setChecked(http_port != 0)
 
-        connectionConfig = self.qv2ray_conf.get('defaultRouteConfig', {}).get('connectionConfig', {})
+        connectionConfig = gen.qv2ray_conf.get('defaultRouteConfig', {}).get('connectionConfig', {})
         ui.chkBypassLAN.setChecked( connectionConfig.get('bypassLAN', True) )
         ui.chkBypassCN.setChecked( connectionConfig.get('bypassCN', True) )
 
@@ -137,9 +130,7 @@ class Qv2rayBalancerForm(QDialog):
                 return
         else:
             # use Qv2ray current route settings
-            self.parent().reloadQv2rayConfigs()
-            self.qv2ray_conf = self.parent().qv2ray_conf
-            route_settings = self.qv2ray_conf.get('defaultRouteConfig', {}).get('routeConfig', {})
+            route_settings = gen.qv2ray_conf.get('defaultRouteConfig', {}).get('routeConfig', {})
 
         # route order
         route_type_order = []
@@ -177,7 +168,6 @@ class Qv2rayBalancerForm(QDialog):
             route_type_order=route_type_order,
             bypassCN=ui.chkBypassCN.isChecked(),
             bypassLAN=ui.chkBypassLAN.isChecked(),
-            config=self.parent().config,
         )
         
         # always write result to file
