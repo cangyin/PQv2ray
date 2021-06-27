@@ -121,23 +121,20 @@ def generate_qv2ray_multi_port_config(
     result['routing']['rules'] = []
     
     # fix duplicate tag error
-    _inbound_tags_d = {}
-    _outbound_tags_d = {}
-    index = 0
-    for index, node in enumerate(nodes):
-        port = ports[index]
+    _inbound_tags = []
+    _outbound_tags = []
+    for port, node in zip(ports, nodes):
         d = get_repr_mapping(node, port=port)
-        _inbound_tags_d[ format_repr(formats['inbound_tag_format'], d) ] = ''
-        _outbound_tags_d[ format_repr(formats['outbound_tag_format'], d) ] = ''
+        _inbound_tags.append( format_repr(formats['inbound_tag_format'], d) )
+        _outbound_tags.append( format_repr(formats['outbound_tag_format'], d) )
 
-    if (index + 1) > len(_inbound_tags_d):
+    if len(deduplicate(_inbound_tags)) < len(_inbound_tags):
         formats['inbound_tag_format'] += ' ({node.id})'
-    if (index + 1) > len(_outbound_tags_d):
+    if len(deduplicate(_outbound_tags)) < len(_outbound_tags):
         formats['outbound_tag_format'] += ' ({node.id})'
 
     # generate inbounds, outbounds, route rules
-    for index, node in enumerate(nodes):
-        port = ports[index]
+    for port, node in zip(ports, nodes):
         d = get_repr_mapping(node, port=port)
         inbound_tag = format_repr(formats['inbound_tag_format'], d)
         outbound_tag = format_repr(formats['outbound_tag_format'], d)
@@ -246,13 +243,12 @@ def generate_qv2ray_balancer_config(
     outbound_tag_format = g_config['balancer']['outbound_tag_format']
 
     # fix duplicate tag error
-    _outbound_tags_d = {}
-    index = 0
-    for index, node in enumerate(nodes):
+    _outbound_tags = []
+    for node in nodes:
         d = get_repr_mapping(node)
-        _outbound_tags_d[ format_repr(outbound_tag_format, d) ] = ''
+        _outbound_tags.append( format_repr(outbound_tag_format, d) )
 
-    if (index + 1) > len(_outbound_tags_d):
+    if len(deduplicate(_outbound_tags)) < len(_outbound_tags):
         outbound_tag_format += ' ({node.id})'
 
     ## inbounds
@@ -274,7 +270,7 @@ def generate_qv2ray_balancer_config(
 
     block_rule_in = False
     direct_rule_in = False
-    for index, node in enumerate(nodes):
+    for node in nodes:
         d = get_repr_mapping(node)
         outbound_tag = format_repr(outbound_tag_format, d)
         # outbound
