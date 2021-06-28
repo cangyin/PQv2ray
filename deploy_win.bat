@@ -3,17 +3,19 @@ rmdir /s /q dist
 
 echo ----------- Building package -----------
 if defined CI (
-    pyinstaller -F pqv2ray.py ^
-        -n pqv2ray ^
-        --windowed ^
-        --noupx 
+    set arg_windowed=--windowed
 ) else (
-    pyinstaller -F pqv2ray.py ^
-        -n pqv2ray ^
-        --noupx 
+    set arg_windowed=
 )
+
+pyinstaller -F pqv2ray.py ^
+    -n pqv2ray ^
+    --icon resources\app-icon.ico ^
+    %arg_windowed% ^
+    --noupx 
+
 
 echo ----------- Copy additional files -----------
 xcopy /S components\config dist\components\config\
 xcopy /S templates dist\templates\
-xcopy /S ui\style.qss dist\ui\
+xcopy /S ui\juniper.qss dist\ui\
