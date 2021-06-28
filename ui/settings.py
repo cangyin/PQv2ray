@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui\settings.ui'
+# Form implementation generated from reading ui file 'c:\Users\Administrator\Desktop\PQv2ray\ui\settings.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -517,4 +517,3 @@ class Ui_Settings(object):
         self.labThanksQv2ray.setText(_translate("Settings", "Thanks To Qv2ray"))
         self.btnAboutQt.setText(_translate("Settings", "关于 Qt"))
         self.tabWidgetSettings.setTabText(self.tabWidgetSettings.indexOf(self.tab_5), _translate("Settings", "关于"))
-from resources import res_rc

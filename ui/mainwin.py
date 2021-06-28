@@ -207,3 +207,4 @@ class Ui_MainWindow(object):
         self.btnQv2rayMultiPort.setText(_translate("MainWindow", "多端口"))
         self.btnQv2rayBalancer.setText(_translate("MainWindow", "负载均衡"))
 from ui.mylistview import MyListView
+from resources import res_rc
