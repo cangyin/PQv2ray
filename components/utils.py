@@ -107,6 +107,9 @@ def deduplicate(l, key=None):
         else:
             return l
 
+def has_duplication(l, key=None) -> bool:
+    return len(deduplicate(l), key) != len(l)
+
 def process_exists(name :str):
     return name in (p.name() for p in psutil.process_iter())
 

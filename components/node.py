@@ -27,14 +27,20 @@ class Node():
         global _node_repr_format
         _node_repr_format = fmt
 
-    def format(self, fmt=_node_repr_format):
-        return format_repr(fmt, self.get_format_dict())
+    def format(self):
+        if hasattr(self, '_fmt'):
+            return format_repr(self._fmt, self.get_format_dict())
+        else:
+            return format_repr(_node_repr_format, self.get_format_dict())
+
+    def set_format(self, fmt):
+        self._fmt = fmt
 
     def get_format_dict(self):
         return {'node.'+k: v for k, v in self.__dict__.items()}
 
     def __repr__(self) -> str:
-        return self.format(_node_repr_format)
+        return self.format()
 
     def __str__(self) -> str:
         return self.format()
@@ -44,6 +50,12 @@ class Node():
             return self.id == other.id
         elif isinstance(other, str):
             return self.id == other
+
+    def __bool__(self):
+        return self.id != ''
+    
+    def __hash__(self) -> int:
+        return hash(self.id)
 
     @property
     def profile(self):
@@ -60,6 +72,10 @@ class Node():
         if not hasattr(self, '_pf_path'):
             self._pf_path = g_config['qv2ray']['config_folder'] + f'/connections/{self.id}.qv2ray.json'
         return self._pf_path
+
+    @profile_path.setter
+    def profile_path(self, _path):
+        self._pf_path = _path
 
     @property
     def complexity_type(self):
@@ -84,11 +100,11 @@ class Node():
 
     def is_balancer_node(self):
         profile = self.profile
-        bBalancers = ('routing' in profile) and ('balancers' in profile['routing'])
-        bSelector = bBalancers and ('selector' in profile['routing']['balancers'])
+        bOneBalancer = ('routing' in profile) and len(profile['routing'].get('balancers', [])) == 1
+        bSelector = bOneBalancer and ('selector' in profile['routing']['balancers'][0])
         if not bSelector:
             return False
-        selector = profile['routing']['balancers']['selector']
+        selector = profile['routing']['balancers'][0]['selector']
         bSelectorLen = bSelector and len(selector) > 0
         return bSelectorLen and len(selector[0]) > 0
 

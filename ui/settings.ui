@@ -930,7 +930,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="../resources/res.qrc">:/3.ico</pixmap>
+          <pixmap>:/3.ico</pixmap>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

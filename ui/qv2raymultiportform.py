@@ -159,7 +159,7 @@ class Qv2rayMultiPortForm(QDialog):
                 117.131.104.7
             ''')
         elif i >= 2: # rules from Qv2ray
-            key = gen.outbound_tag_classes[i-2]
+            key = gen.outbound_classified_tags[i-2]
             rules = gen.qv2ray_conf['defaultRouteConfig']['routeConfig']
             rulesDomain = '\n'.join( rules['domains'].get(key, []) )
             rulesIp = '\n'.join( rules['ips'].get(key, []) )
@@ -293,7 +293,7 @@ class Qv2rayMultiPortForm(QDialog):
             if not node:
                 QMessageBox.warning(self, "未选择欲更新的节点", "请选择一个已有节点")
                 return
-            shouldClose = self.parent().replaceNodeInQv2ray(node.id, qv2ray_result)
+            shouldClose = self.parent().replaceNodeInQv2rayUi(node.id, qv2ray_result)
         else: # manual import
             shouldClose = self.parent().showJsonContent(
                 json=qv2ray_result,

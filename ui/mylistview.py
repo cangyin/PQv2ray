@@ -1,28 +1,29 @@
-import typing
+from typing import Iterable, Optional
 
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
-class MyListView(QtWidgets.QListView):
+class MyListView(QListView):
     
-    focusIn = QtCore.pyqtSignal()
-    focusOut = QtCore.pyqtSignal()
-    keyPress = QtCore.pyqtSignal(QtGui.QKeyEvent)
+    focusIn = pyqtSignal()
+    focusOut = pyqtSignal()
+    keyPress = pyqtSignal(QKeyEvent)
 
-    def __init__(self, parent: typing.Optional[QWidget]) -> None:
+    def __init__(self, parent: Optional[QWidget]) -> None:
         super().__init__(parent=parent)
 
-    @QtCore.pyqtSlot()
-    def focusInEvent(self, e: QtGui.QFocusEvent) -> None:
+    @pyqtSlot()
+    def focusInEvent(self, e: QFocusEvent) -> None:
         self.focusIn.emit()
         return super().focusInEvent(e)
 
-    @QtCore.pyqtSlot()
-    def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
+    @pyqtSlot()
+    def focusOutEvent(self, e: QFocusEvent) -> None:
         self.focusOut.emit()
         return super().focusOutEvent(e)
 
-    @QtCore.pyqtSlot()
-    def keyPressEvent(self, e: QtGui.QKeyEvent) -> None:
+    @pyqtSlot()
+    def keyPressEvent(self, e: QKeyEvent) -> None:
         self.keyPress.emit(e)
         return super().keyPressEvent(e)

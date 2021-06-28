@@ -81,6 +81,10 @@ class Qv2rayBalancerForm(QDialog):
         self.ui.spinSocksPort.setEnabled(b)
 
     @pyqtSlot(bool)
+    def on_rbtnNoRouteSettings_toggled(self, b):
+        self.ui.groupBoxRouteTypeOrder.setEnabled(not b)
+
+    @pyqtSlot(bool)
     def on_rbtnImportQvRouteSettings_toggled(self, b):
         self.ui.widgetQvExportedRouteBrwsPane.setEnabled(b)
         if b and not self.ui.editQvExportedRouteSettings.text():
@@ -121,12 +125,14 @@ class Qv2rayBalancerForm(QDialog):
             return
         
         # route settings
-        if ui.rbtnImportQvRouteSettings.isChecked():
-            route_settings_file = ui.editQvExportedRouteSettings.text()
-            if path.exists(route_settings_file):
-                route_settings =  load_json(route_settings_file)
+        if ui.rbtnNoRouteSettings.isChecked():
+            route_settings = {}
+        elif ui.rbtnImportQvRouteSettings.isChecked():
+            _file = ui.editQvExportedRouteSettings.text()
+            if path.exists(_file):
+                route_settings = load_json(_file)
             else:
-                QMessageBox.warning(self, '文件不存在', f'无法打开文件 {route_settings_file}')
+                QMessageBox.warning(self, '路由设置文件不存在', f'无法打开文件 {_file}')
                 return
         else:
             # use Qv2ray current route settings
@@ -141,10 +147,6 @@ class Qv2rayBalancerForm(QDialog):
 
         # nodes
         nodes = deepcopy(self.nodes)
-        nodes.extend([
-            gen.direct_node,
-            gen.block_node
-        ])
 
         # fallback node
         fallback_node = ui.comboFallbackOutboundNode.currentData()
@@ -168,6 +170,7 @@ class Qv2rayBalancerForm(QDialog):
             route_type_order=route_type_order,
             bypassCN=ui.chkBypassCN.isChecked(),
             bypassLAN=ui.chkBypassLAN.isChecked(),
+            balancerTag=ui.editAutoImportName.text()
         )
         
         # always write result to file
@@ -190,7 +193,7 @@ class Qv2rayBalancerForm(QDialog):
             if not node:
                 QMessageBox.warning(self, "未选择欲更新的节点", "请选择一个已有节点")
                 return
-            shouldClose = self.parent().replaceNodeInQv2ray(node.id, qv2ray_result)
+            shouldClose = self.parent().replaceNodeInQv2rayUi(node.id, qv2ray_result)
         else: # manual import
             shouldClose = self.parent().showJsonContent(
                 json=qv2ray_result,

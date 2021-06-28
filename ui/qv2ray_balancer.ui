@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>772</width>
-    <height>550</height>
+    <width>793</width>
+    <height>564</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -186,6 +186,16 @@
       <item row="0" column="0">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
+         <widget class="QRadioButton" name="rbtnNoRouteSettings">
+          <property name="text">
+           <string>空</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QRadioButton" name="rbtnUseQvRouteSettings">
           <property name="text">
            <string>使用Qv2ray全局路由</string>
@@ -353,7 +363,7 @@
        </widget>
       </item>
       <item row="0" column="1" rowspan="2">
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="groupBoxRouteTypeOrder">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
           <horstretch>0</horstretch>

@@ -38,7 +38,6 @@ class QLinkedNodeComboBox(QComboBox):
             nodes = self.special_group_mapping[group_name]
         else:
             nodes = gen.get_nodes_in_group(gen.get_group_id(group_name))
-            print(gen.get_group_id(group_name))
 
         if self.selector:
             nodes = [node for node in nodes if self.selector(node)]

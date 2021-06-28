@@ -13,4 +13,5 @@ build/
 venv/
 config.json
 
-demos/
+demos/*.*
+!demos/screenshots/

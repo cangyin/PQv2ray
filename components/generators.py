@@ -1,10 +1,13 @@
 from .utils import *
-from .node import Node
+from .node import Node, NodeComplexityType
 from .config import g_config
 from .mytrie import common_prefixes
 
 from random import choices
 from string import ascii_lowercase
+
+logger = logging.getLogger(__name__)
+
 
 # these are JSON objects that should be loaded at runtime
 
@@ -14,19 +17,13 @@ qv2ray_conf = {}
 
 default_group_id = '000000000000'
 
-qv2ray_multi_port_template = {}
-qv2ray_balancer_template = {}
-
 inbound_http_template = {}
 inbound_socks_template = {}
-
-outbound_block_template = {}
-outbound_direct_template = {}
 
 outbound_direct_tag = 'direct'
 outbound_proxy_tag = 'proxy'
 outbound_block_tag = 'block'
-outbound_tag_classes = (outbound_direct_tag, outbound_proxy_tag, outbound_block_tag)
+outbound_classified_tags = (outbound_direct_tag, outbound_proxy_tag, outbound_block_tag)
 
 # special nodes
 block_node = Node(id='0'*12, name=outbound_block_tag)
@@ -34,16 +31,16 @@ direct_node = Node(id='1'*12, name=outbound_direct_tag)
 
 
 def load():
+    clear_cache()
     folder = g_config['qv2ray']['config_folder']
     groups.update( load_json(folder + '/groups.json') )
     connections.update( load_json(folder + '/connections.json') )
     qv2ray_conf.update( load_json(folder + '/Qv2ray.conf') )
-    qv2ray_multi_port_template.update( load_json(g_config['multi_port']['qv2ray_template_path']) )
-    qv2ray_balancer_template.update( load_json(g_config['balancer']['qv2ray_template_path']) )
     inbound_http_template.update( load_json(g_config["v2ray_object_templates"]["inbound_http"]) )
     inbound_socks_template.update( load_json(g_config["v2ray_object_templates"]["inbound_socks"]) )
-    outbound_block_template.update( load_json(g_config["v2ray_object_templates"]["outbound_block"]) )
-    outbound_direct_template.update( load_json(g_config["v2ray_object_templates"]["outbound_direct"]) )
+    block_node.profile_path = g_config["v2ray_object_templates"]["outbound_block"]
+    direct_node.profile_path = g_config["v2ray_object_templates"]["outbound_direct"]
+    logger.info('loaded.')
 
 
 def get_display_name(connection_id):
@@ -82,19 +79,6 @@ def get_random_node_id():
     return ''.join( choices(ascii_lowercase, k=12) )
 
 
-def prepare_qv2ray_multi_port_template():
-    qv2ray_multi_port_template.update({
-        "PQV2RAY_META": {
-            "type": "multi-port"
-        }
-    })
-    routing = qv2ray_multi_port_template['routing']
-    routing.update({
-        'domainMatcher': g_config['v2ray']['domainMatcher'],
-        'domainStrategy': g_config['v2ray']['domainStrategy']
-    })
-
-
 def generate_qv2ray_multi_port_config(
         nodes :List[Node],
         ports :List[int],
@@ -102,130 +86,163 @@ def generate_qv2ray_multi_port_config(
         route_rules=[],
         block_rules=[],
     ):
-    prepare_qv2ray_multi_port_template()
-
-    formats = deepcopy(g_config['multi_port'])
-
-    # inbounds
-    inbound_template = inbound_template # qv2ray_multi_port_template['inbounds'][0]
-    # outbounds
-    outbound_template = qv2ray_multi_port_template['outbounds'][0]
-    # rules
-    rule_template = qv2ray_multi_port_template['routing']['rules'][0]
-    # result
-    result = deepcopy(qv2ray_multi_port_template)
-    result.update({
-        'inbounds': [],
-        'outbounds': [],
-    })
-    result['routing']['rules'] = []
+    inbound_tag_format = g_config['multi_port']['inbound_tag_format']
+    outbound_tag_format = g_config['multi_port']['outbound_tag_format']
+    rule_tag_format = g_config['multi_port']['rule_tag_format']
     
     # fix duplicate tag error
     _inbound_tags = []
     _outbound_tags = []
     for port, node in zip(ports, nodes):
         d = get_repr_mapping(node, port=port)
-        _inbound_tags.append( format_repr(formats['inbound_tag_format'], d) )
-        _outbound_tags.append( format_repr(formats['outbound_tag_format'], d) )
+        _inbound_tags.append( format_repr(inbound_tag_format, d) )
+        _outbound_tags.append( format_repr(outbound_tag_format, d) )
 
     if len(deduplicate(_inbound_tags)) < len(_inbound_tags):
-        formats['inbound_tag_format'] += ' ({node.id})'
+        inbound_tag_format += ' ({node.id})'
     if len(deduplicate(_outbound_tags)) < len(_outbound_tags):
-        formats['outbound_tag_format'] += ' ({node.id})'
+        outbound_tag_format += ' ({node.id})'
 
     # generate inbounds, outbounds, route rules
+    inbounds = []
+    outbounds = []
+    rules = []
+
+    balancers= []
+    subject_selector = []
+
+    rule_common = {
+        "QV2RAY_RULE_ENABLED": True,
+        "QV2RAY_RULE_TAG": "",
+        "type": "field",
+    }
     for port, node in zip(ports, nodes):
         d = get_repr_mapping(node, port=port)
-        inbound_tag = format_repr(formats['inbound_tag_format'], d)
-        outbound_tag = format_repr(formats['outbound_tag_format'], d)
+        inboundTag = format_repr(inbound_tag_format, d)
+        outboundTag = None
+        balancerTag = None
+
+        if node.complexity_type == NodeComplexityType.Simple:
+            outboundTag = format_repr(outbound_tag_format, d)
+        elif node.complexity_type == NodeComplexityType.Balancer:
+            balancerTag = '_' + get_random_node_id()[0:4] # random suffix to avoid duplicated tag
+        else:
+            logger.warn(f'unable to handle {node}, ignored.')
+            continue # leaves an unused port.
         
         # inbound
         inbound = deepcopy(inbound_template)
         inbound.update({
             'port': port,
-            'tag': inbound_tag
+            'tag': inboundTag
         })
-        result['inbounds'].append(inbound)
+        inbounds.append(inbound)
 
-        # outbound
-        outbound = deepcopy(outbound_template)
-        outbound['QV2RAY_OUTBOUND_METADATA'].update({
-            'connectionId': node.id,
-            'displayName': outbound_tag
-        })
-        result['outbounds'].append(outbound)
-
+        # outbound (or outbounds in complex node)
+        if outboundTag:
+            outbounds.append({
+                'QV2RAY_OUTBOUND_METADATA': {
+                    'connectionId': node.id,
+                    'displayName': outboundTag,
+                    "metaType": 1
+                }
+            })
+        elif balancerTag:
+            # gather all outbounds and the (first) balancer object
+            balancer_outbounds = node.profile['outbounds']
+            # filter out block or direct outbound
+            balancer_outbounds = [o for o in balancer_outbounds if o.get('protocol') not in ('blackhole', 'freedom')]
+            outbounds.extend(balancer_outbounds)
+            balancer = deepcopy(node.profile['routing']['balancers'][0])
+            balancerTag = balancer['tag'] + balancerTag
+            balancer['tag'] =  balancerTag
+            balancers.append(balancer)
+            if balancer['strategy']['type'] == 'leastPing':
+                subject_selector.extend(balancer['selector'])
+        
         # rule
-        rule = deepcopy(rule_template)
+        rule = deepcopy(rule_common)
         rule.update({
-            'QV2RAY_RULE_TAG': format_repr(formats['rule_tag_format'], d),
-            'inboundTag': [inbound_tag],
-            'outboundTag': outbound_tag
+            'QV2RAY_RULE_TAG': format_repr(rule_tag_format, d),
+            'inboundTag': [inboundTag],
         })
-        ruleListDomain = route_rules.get('domains', [])
-        ruleListIp = route_rules.get('ips', [])
-        if ruleListDomain or ruleListIp:
-            if ruleListDomain:
-                ruleDomain = deepcopy(rule)
-                ruleDomain.update({'domain': ruleListDomain})
-                if ruleListIp: # deduplicate
-                    ruleDomain.update({'QV2RAY_RULE_TAG': format_repr(formats['rule_tag_format'], d) + ' (domain)'})
-                result['routing']['rules'].append(ruleDomain)
-            if ruleListIp:
-                ruleIp = deepcopy(rule)
-                ruleIp.update({'ip': ruleListIp})
-                if ruleDomain: # deduplicate
-                    ruleIp.update({'QV2RAY_RULE_TAG': format_repr(formats['rule_tag_format'], d) + ' (ip)'})
-                result['routing']['rules'].append(ruleIp)
+        if outboundTag:
+            rule['outboundTag'] = outboundTag
+        elif balancerTag:
+            rule["balancerTag"] = balancerTag
+            
+        domains = route_rules.get('domains', [])
+        ips = route_rules.get('ips', [])
+        if domains or ips:
+            if domains:
+                rule_domain = deepcopy(rule)
+                rule_domain.update({'domain': domains})
+                if ips: # deduplicate
+                    rule_domain['QV2RAY_RULE_TAG'] = format_repr(rule_tag_format, d) + ' (domain)'
+                rules.append(rule_domain)
+            if ips:
+                rule_ip = deepcopy(rule)
+                rule_ip.update({'ip': ips})
+                if rule_domain: # deduplicate
+                    rule_ip['QV2RAY_RULE_TAG'] = format_repr(rule_tag_format, d) + ' (ip)'
+                rules.append(rule_ip)
         else:
-            result['routing']['rules'].append(rule)
+            rules.append(rule)
 
     # block rule
     if block_rules.get('domains') or block_rules.get('ips'):
-        rule = deepcopy(rule_template)
-        rule.pop('inboundTag')
-        rule.update({'outboundTag': 'block'})
+        rule = deepcopy(rule_common)
+        rule.update({'outboundTag': outbound_block_tag})
 
         if block_rules.get('domains'):
-            ruleDomain = deepcopy(rule)
-            ruleDomain.update({
+            rule_domain = deepcopy(rule)
+            rule_domain.update({
                 'QV2RAY_RULE_TAG': 'block-domain',
                 'domain': block_rules['domains']
             })
-            result['routing']['rules'].insert(0, ruleDomain) # block rule be the first rule
+            rules.insert(0, rule_domain) # block rule be the first rule
         if block_rules.get('ips'):
-            ruleIp = deepcopy(rule)
-            ruleIp.update({
+            rule_ip = deepcopy(rule)
+            rule_ip.update({
                 'QV2RAY_RULE_TAG': 'block-ip',
                 'ip': block_rules['ips']
             })
-            result['routing']['rules'].insert(0, ruleIp)
-        result['outbounds'].append(outbound_block_template)
- 
-    return result
+            rules.insert(0, rule_ip)
+        outbounds.append(block_node.profile)
 
+    # TODO what if the outbound is not a reference ? 
+    outbounds = deduplicate(outbounds, key=lambda d: d.get('QV2RAY_OUTBOUND_METADATA', {}).get('connectionId', get_random_node_id()))
 
-def prepare_qv2ray_balancer_template():
-    qv2ray_balancer_template.update({
+    result = {
         "PQV2RAY_META": {
-            "type": "balancer"
+            "type": "multi-port"
+        },
+        'inbounds': inbounds,
+        'outbounds': outbounds,
+        'routing': {
+            'domainStrategy': g_config['v2ray']['domainStrategy'],
+            'domainMatcher': g_config['v2ray']['domainMatcher'],
+            'balancers': balancers,
+            'rules': rules,
         }
-    })
-    routing = qv2ray_balancer_template['routing']
-    # balancer strategy type
-    routing['balancers'][0]['strategy']['type'] = g_config['v2ray']['balancer_strategy']
-    ## domainMatcher
-    routing['domainMatcher'] = g_config['v2ray']['domainMatcher']
+    }
+    if subject_selector:
+        result.update({
+            "observatory": {
+                "subjectSelector": deduplicate(subject_selector)
+            }})
+    return result
 
 
 def generate_qv2ray_balancer_config(
         nodes :List[Node],
         listenIp,
         ports :dict,
-        route_settings=[],    
-        route_type_order=outbound_tag_classes,
+        route_settings={},    
+        route_type_order=outbound_classified_tags,
         bypassCN=True,
         bypassLAN=True,
+        balancerTag='balancer'
     ):
     '''
         ports = {
@@ -234,11 +251,6 @@ def generate_qv2ray_balancer_config(
         }
     '''
     assert(len(route_type_order) == 3)
-
-    prepare_qv2ray_balancer_template()
-    
-    # result
-    result = deepcopy(qv2ray_balancer_template)
     
     outbound_tag_format = g_config['balancer']['outbound_tag_format']
 
@@ -262,47 +274,24 @@ def generate_qv2ray_balancer_config(
             inbound_tags.append(inbound['tag'])
             inbounds.append(inbound)
 
-    result['inbounds'] = inbounds
-
     ## outbounds, balancer selector
     outbounds = []
     selector = []
 
-    block_rule_in = False
-    direct_rule_in = False
     for node in nodes:
-        d = get_repr_mapping(node)
-        outbound_tag = format_repr(outbound_tag_format, d)
-        # outbound
-        if node in (block_node, direct_node):
-            if node == block_node:
-                outbounds.append(outbound_block_template)
-                block_rule_in = True
-            elif node == direct_node:
-                outbounds.append(outbound_direct_template)
-                direct_rule_in = True
-            # selector.append(node.name) # NO !
-        else:
-            outbounds.append({
-                "QV2RAY_OUTBOUND_METADATA": {
-                    'connectionId': node.id,
-                    'displayName': outbound_tag,
-                    "metaType": 1
-                }
-            })
-            selector.append(outbound_tag)
+        outbound_tag = format_repr(outbound_tag_format, get_repr_mapping(node))
+        outbounds.append({
+            "QV2RAY_OUTBOUND_METADATA": {
+                'connectionId': node.id,
+                'displayName': outbound_tag,
+                "metaType": 1
+            }
+        })
+        selector.append(outbound_tag)
 
-    if not block_rule_in:
-        outbounds.append(outbound_block_template)
-    if not direct_rule_in:
-        outbounds.append(outbound_direct_template)
-
-    result['outbounds'] = outbounds
     # common prefixes of tags in selector
     if g_config['v2ray']['selector_use_prefixes']:
         selector = common_prefixes(selector)
-
-    result['routing']['balancers'][0]['selector'] = selector
 
     ## route rules
     rules = []
@@ -312,32 +301,38 @@ def generate_qv2ray_balancer_config(
         "type": "field",
         "inboundTag": inbound_tags,
     }
+    empty = True
     for route_type in route_type_order:
         for domain_or_ip in ('ip', 'domain'):
+            domains_or_ips = route_settings.get(domain_or_ip + 's', {}).get(route_type, [])
+            if not domains_or_ips:
+                continue
+
             rule = deepcopy(rule_common)
             rule.update({
                 "QV2RAY_RULE_TAG": f"{route_type}-{domain_or_ip}",
-                # 'domain': route_settings.get('domains', {}).get(route_type, [])
-                # 'ip': route_settings.get('ips', {}).get(route_type, [])
-                domain_or_ip: route_settings.get(domain_or_ip + 's', {}).get(route_type, [])
+                domain_or_ip: domains_or_ips
             })
             if route_type == outbound_proxy_tag:
-                rule["balancerTag"] = "balancer"
-            else: # block, direct
+                rule["balancerTag"] = balancerTag
+            else:
                 rule["outboundTag"] = route_type
             rules.append(rule)
+            empty = False
+    if empty:
+        rule = deepcopy(rule_common)
+        rule.update({
+            "balancerTag": balancerTag,
+            "QV2RAY_RULE_TAG": 'rule',
+        })
+        rules.append(rule)
 
-    # delete empty rules
-    for index in range(len(rules) - 1, -1, -1):
-        if not rules[index].get('domain') and not rules[index].get('ip'):
-            del rules[index]
-
-    # 'bypass' rules
+    ## 'bypass' rules
     if bypassCN:
         # find starting index of 'direct' rules 
         index_direct = 0
         for index_direct, rule in enumerate(rules):
-            if rule.get('outboundTag', '') == 'direct':
+            if rule.get('outboundTag', '') == outbound_direct_tag:
                 break
         rules_bypassCN = load_json(g_config["v2ray_object_templates"]['rules_bypassCN'])
         rules_bypassCN = format_json_obj(rules_bypassCN, globals())
@@ -348,26 +343,39 @@ def generate_qv2ray_balancer_config(
         rules_bypassLAN = format_json_obj(rules_bypassLAN, globals())
         rules = rules_bypassLAN + rules
 
-    result['routing']['rules'] = rules
+    # we need to supply the special outbounds
+    if route_settings.get('ips', {}).get('block') or route_settings.get('domains', {}).get('block'):
+        outbounds.append(block_node.profile)
+    if bypassCN or bypassLAN or route_settings.get('ips', {}).get('direct') or route_settings.get('domains', {}).get('direct'):
+        outbounds.append(direct_node.profile)
 
-    ## balancer stategy type
-    balancer_strategy = g_config['v2ray']['balancer_strategy']
-    if balancer_strategy == 'leastPing': # ( v2ray 4.38.0+ )
-        observatory = {
+    result = {
+        "PQV2RAY_META": {
+            "type": "balancer"
+        },
+        'inbounds': inbounds,
+        'outbounds': outbounds,
+        'routing': {
+            'domainStrategy': route_settings.get('domainStrategy') or g_config['v2ray']['domainStrategy'],
+            'domainMatcher': g_config['v2ray']['domainMatcher'],
+            'balancers': [{
+                'selector': selector,
+                'tag': balancerTag,
+                "strategy": {
+                    "type": g_config['v2ray']['balancer_strategy']
+                }
+            }],
+            'rules': rules,
+        }
+    }
+    if g_config['v2ray']['balancer_strategy'] == 'leastPing': # ( v2ray 4.38.0+ )
+        result.update({
             "observatory": {
                 "subjectSelector": selector
-            }}
-        result.update(observatory)
-    else:
-        result.pop('observatory', {})
-
-    ## domainStrategy
-    result['routing']['domainStrategy'] = route_settings.get('domainStrategy', 'AsIs')
-
+            }})
     return result
 
 
 
 if __name__ == '__main__':
-    # see test.py
     pass
