@@ -33,14 +33,13 @@
         "mapping_report_result_path": "results/result-mapping.result.json",
         "mapping_report_template_path": "templates/multi-port/result-mapping-as-dict.json",
         "qv2ray_result_path": "results/multi-port.result.json",
-        "qv2ray_template_path": "templates/multi-port/qv2ray-complex-config.json",
-        "switchyomega_result_path": "results/OmegaOptions.result.json",
+        "config_level_v2ray": false,
         "switchyomega_proxy_template": "templates/multi-port/switchyomega-single-proxy.json"
     },
     "balancer": {
         "outbound_tag_format": "{node.group} ◎ {node.name}",
         "qv2ray_result_path": "results/balancer.result.json",
-        "qv2ray_template_path": "templates/balancer/qv2ray-complex-config.json"
+        "config_level_v2ray": false
     },
     "v2ray_object_templates": {
         "inbound_http": "templates/inbound-http.json",

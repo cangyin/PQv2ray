@@ -1,10 +1,13 @@
 import collections
 import os, sys
-
+import logging
 from .utils import load_json
 
 # global config object
 g_config = {}
+
+
+logger = logging.getLogger(__name__)
 
 
 class ConfigError(Exception):
@@ -22,7 +25,7 @@ def load_config(configuration_file):
     res = None
 
     for dirname in __config_file_paths():
-        print(dirname)
+        logger.debug(dirname)
         path = os.path.join(dirname, configuration_file)
         new_config = None
         if os.path.isfile(path):

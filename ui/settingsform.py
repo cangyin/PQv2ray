@@ -1,6 +1,4 @@
 
-# PyQt5 imports
-from time import time
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -9,7 +7,10 @@ from .settings import Ui_Settings
 
 from components import *
 
-from pyqtconfig import ConfigManager
+from pyqtconfig import config, ConfigManager
+
+# hook pyqtconfig to support QRadioButton
+config.HOOKS[QRadioButton] = (config._get_QCheckBox, config._set_QCheckBox, config._event_QPushButton)
 
 
 class SettingsForm(QDialog):
@@ -34,7 +35,7 @@ class SettingsForm(QDialog):
 
         self.config = deepcopy( g_config )
 
-        # # tab 1
+        # # tab UI
         self.config_mgr_ui = ConfigManager()
         self.config_mgr_ui.set_defaults(self.config['ui'])
         self.config_mgr_ui.add_handlers({
@@ -45,14 +46,14 @@ class SettingsForm(QDialog):
             'node_repr_format': ui.editNodeReprFormat,
             'json_highlight': ui.chkJsonHighlight
         })
-        # # tab 2, Qv2ray
+        # # tab Qv2ray
         self.config_mgr_qv2ray = ConfigManager()
         self.config_mgr_qv2ray.set_defaults(self.config['qv2ray'])
         self.config_mgr_qv2ray.add_handlers({
             'folder': ui.editQvFolder,
             'auto_start_qv2ray': ui.chkAutoStartQv2ray,
         })
-        # # tab 3, v2ray
+        # # tab v2ray
         self.config_mgr_v2ray = ConfigManager()
         self.config_mgr_v2ray.set_defaults(self.config['v2ray'])
         self.config_mgr_v2ray.add_handlers({
@@ -61,7 +62,7 @@ class SettingsForm(QDialog):
             'selector_use_prefixes': ui.chkSelectorPrefix,
             "domainStrategy": ui.comboDomainStrategy,
         })
-        # # tab 4
+        # # tab multi-port
         self.config_mgr_mp = ConfigManager()
         self.config_mgr_mp.set_defaults(self.config['multi_port'])
         self.config_mgr_mp.add_handlers({
@@ -73,13 +74,15 @@ class SettingsForm(QDialog):
             'mapping_report_template_path': ui.editMappingReportTemplatePath,
             'mapping_report_result_path': ui.editMappingReportResultPath,
             'qv2ray_result_path': ui.editQvComplexConfigResultPath,
+            'config_level_v2ray': ui.rbtnProfileLevelV2
         })
-        # # tab 5
+        # # tab balancer
         self.config_mgr_bl = ConfigManager()
         self.config_mgr_bl.set_defaults(self.config['balancer'])
         self.config_mgr_bl.add_handlers({
             'outbound_tag_format': ui.editOutboundTagFmt2,
             'qv2ray_result_path': ui.editQvComplexConfigResultPath2,
+            'config_level_v2ray': ui.rbtnProfileLevelV2_2
         })
         
         self.setHelpText('')
@@ -89,13 +92,14 @@ class SettingsForm(QDialog):
 
     def updateInstantHoverHelp(self):
         helps = {
-            # tab 1
+            # tab UI
             'editNodeReprFormat': '''<p>左右两个节点列表中，节点名的显示格式。</p>''' + self.format_fields_help,
             'chkJsonHighlight': '''<p>当选择手动导入Qv2ray节点配置时，输出的JSON结果可以增加语法高亮以增强可读性。</p>''',
-            # tab 2
+            # tab Qv2ray
             'editQvFolder': '''<p>Qv2ray的安装目录。</p>''',
             'editQvconfigFolder': '''<p>如果您没有在Qv2ray中设置配置目录到其他位置，则不需要担心这里。</p>''',
             'chkAutoStartQv2ray': '<p>当您点击“确认生成”按钮且选择自动导入Qv2ray时，操作完成后是否自动启动Qv2ray。</p>',
+            # tab v2ray
             'comboDomainMatcher': '''
                     <p><strong>linear</strong>：使用线性匹配算法，默认值；</p>
                     <p><strong>mph</strong>：使用最小完美散列（minimal perfect hash）算法。
@@ -111,7 +115,7 @@ class SettingsForm(QDialog):
                     <p><strong>精简前</strong>：<br/>香港1-V2Ray <br/>香港2-V2Ray <br/>香港3-V2Ray <br/>新加坡01 <br/>新加坡02 <br/>香港HGC01 <br/>香港HGC02 <br/>香港HGC03 </p>
                     <p><strong>精简后</strong>：<br/>香港 <br/>新加坡0 <br/>香港HGC0 </p>
                 ''',
-            # tab 4
+            # tab multi-port
             'editInboundTagFmt': '<p>入站标签(inbound tag)格式。</p>' + self.format_fields_help,
             'editOutboundTagFmt': '<p>出站标签(outbound tag)格式。</p>' + self.format_fields_help,
             'editRuleTagFmt': '<p>规则标签(rule tag)格式。</p>' + self.format_fields_help,
@@ -119,8 +123,9 @@ class SettingsForm(QDialog):
             'editMappingReportTemplatePath': '这里选择生成报告的模板。',
             'editMappingReportResultPath': '这里选择生成报告的位置。',
             'editQvComplexConfigResultPath': '这里选择多端口节点配置文件的保存位置。',
-            'editSoResultPath': '这里选择为SwitchyOmega插件生成的文件的保存位置。',
-            # tab 5
+            'rbtnProfileLevelQv': '生成的节点配置可导入Qv2ray，通过Qv2ray的GUI使用。',
+            'rbtnProfileLevelV2': '生成的节点配置可直接提供给v2ray，命令行使用。节点配置文件的路径设置参见上方。',
+            # tab balancer
             'editOutboundTagFmt2': '''
                     <p>出站标签(outbound tag)格式。</p>
                     <div style="color: #1e1e1e;">
@@ -131,6 +136,10 @@ class SettingsForm(QDialog):
                     <p><strong>node.group_id</strong>: 节点所在分组的ID；</p>
                     </div>
                 ''',
+            'editQvComplexConfigResultPath2': '这里选择负载均衡节点配置文件的保存位置。',
+            'rbtnProfileLevelQv_2': '生成的节点配置可导入Qv2ray，通过Qv2ray的GUI使用。',
+            'rbtnProfileLevelV2_2': '生成的节点配置可直接提供给v2ray，命令行使用。节点配置文件的路径设置参见上方。',
+            
         }
         w = QApplication.widgetAt(QCursor.pos())
         if w :
