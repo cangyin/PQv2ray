@@ -38,6 +38,35 @@ def dump_json(obj, file :str):
 def dump_jsons(obj):
     return json.dumps(obj, ensure_ascii=False, indent=4)
 
+def find_json_overrides(json_full, json_partial):
+    '''
+        d1 = {'a': 1, 'b': 2, "c": [1,2,3], "d": True}
+        d2 = {'a': 2, "c": [1]}
+
+        find_json_overrides(d1, d2) --> {"a": 2, "c": [1]}
+    '''
+    if type(json_full) != type(json_partial):
+        return json_partial
+    if isinstance(json_full, dict):
+        updated = {}
+        for k, v in json_full.items():
+            new_v = find_json_overrides(v, json_partial.get(k))
+            if new_v:
+                updated[k] = new_v
+        return updated
+    elif isinstance(json_full, list):
+        if len(json_full) != len(json_partial):
+            return json_partial
+        for i1, i2 in zip(json_full, json_partial):
+            new_v = find_json_overrides(i1, i2)
+            if new_v:
+                return json_partial
+    else:
+        if json_full != json_partial:
+            return json_partial
+        else:
+            return None
+
 @functools.lru_cache(maxsize=None)
 def read_text_file(file :str):
     try:
