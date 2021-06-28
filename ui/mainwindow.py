@@ -201,6 +201,16 @@ class MainWindow(QMainWindow):
         return w.exec() == QDialog.Accepted
 
 
+    def autoStartQv2rayProcess(self) -> bool:
+        config = g_config['qv2ray']
+        if config['auto_start_qv2ray']:
+            if not qv2ray_process_exists():
+                if self.checkQv2rayFolder(config['folder']):
+                    start_qv2ray_process(config['folder'])
+                    time.sleep(0.5)
+        return qv2ray_process_exists()
+
+
     def addNodeToQv2ray(self, node :'Node', qv2ray_node_file :str):
         group_id = gen.get_group_id(node.group) or gen.default_group_id
         gen.groups[group_id]['connections'] = gen.groups[group_id].get('connections', []) + [node.id]
@@ -236,11 +246,7 @@ class MainWindow(QMainWindow):
         # do merge
         self.addNodeToQv2ray(new_node, qv2ray_node_file)
         
-        if g_config['qv2ray']['auto_start_qv2ray']:
-            start_qv2ray_process(g_config['qv2ray']['folder'])
-            time.sleep(0.5)
-
-        if qv2ray_process_exists():
+        if self.autoStartQv2rayProcess():
             msg = '新配置导入完成，Qv2ray已经启动。'
         else:
             msg = '新配置导入完成，但Qv2ray尚未启动，您可以手动启动它。'
@@ -250,10 +256,7 @@ class MainWindow(QMainWindow):
 
     def replaceNodeInQv2rayUi(self, node_id :str, node_json :dict):
         dump_json(node_json, g_config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json')
-        if not qv2ray_process_exists():
-            if g_config['qv2ray']['auto_start_qv2ray']:
-                start_qv2ray_process(g_config['qv2ray']['folder'])
-                time.sleep(0.5)
+        if self.autoStartQv2rayProcess():
             msg = '配置更新完成，Qv2ray已经启动。'
         else:
             msg = '配置更新完成，您需要重启Qv2ray。'

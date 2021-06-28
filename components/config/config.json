@@ -16,7 +16,7 @@
     "qv2ray": {
         "folder": "",
         "config_folder": "",
-        "auto_start_qv2ray": true
+        "auto_start_qv2ray": false
     },
     "v2ray": {
         "domainMatcher": "mph",
