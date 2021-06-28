@@ -70,6 +70,9 @@ class MainWindow(QMainWindow):
         ui.listViewLeft.setWordWrap(False)
         ui.listViewRight.setWordWrap(False)
 
+        self.model_right.rowsInserted.connect(self.on_model_right_rowsChanged)
+        self.model_right.rowsRemoved.connect(self.on_model_right_rowsChanged)
+
 
     def reloadStyleSheet(self) -> None:
         styleSheet = open(g_config['ui']['stylesheet'], 'rt', encoding='UTF-8').read()
@@ -137,7 +140,7 @@ class MainWindow(QMainWindow):
 
     def checkQv2rayFolder(self, folder :str):
         valid = path.exists( path.join(folder, qv2ray_bin_name) )
-        print(valid)
+        logger.info(f'Qv2ray folder {folder} is ' + ('invalid', 'valid')[valid])
         return valid
 
 
@@ -237,15 +240,23 @@ class MainWindow(QMainWindow):
             time.sleep(0.5)
 
         if qv2ray_process_exists():
-            res = QMessageBox.information(self, '完成', '新配置导入完成，Qv2ray已经启动。', buttons=QMessageBox.Ok | QMessageBox.Close)
+            msg = '新配置导入完成，Qv2ray已经启动。'
         else:
-            res = QMessageBox.information(self, '完成', '新配置导入完成，但Qv2ray尚未启动，您可以手动启动它。', buttons=QMessageBox.Ok | QMessageBox.Close)
+            msg = '新配置导入完成，但Qv2ray尚未启动，您可以手动启动它。'
+        res = QMessageBox.information(self, '完成', msg, buttons=QMessageBox.Ok | QMessageBox.Close)
         return res == QMessageBox.Ok
 
 
-    def replaceNodeInQv2ray(self, node_id :str, node_json :dict):
+    def replaceNodeInQv2rayUi(self, node_id :str, node_json :dict):
         dump_json(node_json, g_config['qv2ray']['config_folder'] + f'/connections/{node_id}.qv2ray.json')
-        res = QMessageBox.information(self, '完成', '配置更新完成，您需要重启Qv2ray。', buttons=QMessageBox.Ok | QMessageBox.Close)
+        if not qv2ray_process_exists():
+            if g_config['qv2ray']['auto_start_qv2ray']:
+                start_qv2ray_process(g_config['qv2ray']['folder'])
+                time.sleep(0.5)
+            msg = '配置更新完成，Qv2ray已经启动。'
+        else:
+            msg = '配置更新完成，您需要重启Qv2ray。'
+        res = QMessageBox.information(self, '完成', msg, buttons=QMessageBox.Ok | QMessageBox.Close)
         return res == QMessageBox.Ok
 
 
@@ -272,7 +283,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot(str)
     def on_comboGroups_currentTextChanged(self, s :str):
         if s:
-            print(s)
+            logger.info(s)
             self.populateNodeListLeft()
 
 
@@ -282,12 +293,15 @@ class MainWindow(QMainWindow):
         ignored_nodes = []
 
         selectedRows = self.selection_left.selectedRows()
-        selectedRows = sorted(selectedRows, key=lambda modelIndex :modelIndex.row())
+        selectedRows = sorted(selectedRows, key=lambda modelIndex: modelIndex.row())
         for index in selectedRows:
             node = self.model_left.getNode(index.row())
-            if node.complexity_type == NodeComplexityType.General:
+
+            logger.debug(str(node.complexity_type))
+            if node.complexity_type in (NodeComplexityType.General, NodeComplexityType.MultiPort):
                 ignored_nodes.append(node)
                 continue
+
             if not node in nodes_right:
                 self.model_right.appendNode(node)
 
@@ -299,9 +313,20 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_btnDeleteFromRight_clicked(self):
         selectedRows = self.selection_right.selectedRows()
-        selectedRows = sorted(selectedRows, key=lambda modelIndex :modelIndex.row(), reverse=True)
+        selectedRows = sorted(selectedRows, key=lambda modelIndex: modelIndex.row(), reverse=True)
         for index in selectedRows:
             self.model_right.removeNode(index.row())
+
+    
+    @pyqtSlot(QModelIndex, int, int)
+    def on_model_right_rowsChanged(self, parent, first, last) -> None:
+        has_balancer = False
+        for node in self.model_right.getNodes():
+            if node.complexity_type == NodeComplexityType.Balancer:
+                has_balancer = True
+                break
+        # self.ui.btnQv2rayMultiPort.setEnabled(True) # always enabled (for Balancer or Simple)
+        self.ui.btnQv2rayBalancer.setEnabled(not has_balancer)
 
 
     @pyqtSlot()
@@ -336,12 +361,6 @@ class MainWindow(QMainWindow):
             self.on_btnDeleteFromRight_clicked()
 
 
-    # @pyqtSlot("QModelIndexList")
-    def on_listViewRight_indexesMoved(indexes ):
-        print(
-            indexes
-        )
-
     @pyqtSlot(str)
     def on_editFilter_textChanged(self, text):
         ui = self.ui
@@ -372,14 +391,14 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def on_btnCheckAllLeft_clicked(self):
-        selection = QItemSelection(self.model_left.index(0,0), self.model_left.index(self.model_left.rowCount()-1,0))
+        selection = QItemSelection(self.model_left.index(0,0), self.model_left.index(self.model_left.count()-1,0))
         self.selection_left.select(selection, QItemSelectionModel.Select)
         self.ui.btnAppendToRight.setEnabled(True)
 
 
     @pyqtSlot()
     def on_btnCheckAllRight_clicked(self):
-        selection = QItemSelection(self.model_right.index(0,0), self.model_right.index(self.model_right.rowCount()-1,0))
+        selection = QItemSelection(self.model_right.index(0,0), self.model_right.index(self.model_right.count()-1,0))
         self.selection_right.select(selection, QItemSelectionModel.Select)
         self.ui.btnDeleteFromRight.setEnabled(True)
 
@@ -397,8 +416,11 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def on_btnRefreshList_clicked(self):
         gen.load()
+        self.model_right.resetNodes()
+        current = self.ui.comboGroups.currentIndex()
         self.populateGroupNames()
-        self.populateNodeListLeft()
+        if self.ui.comboGroups.count() > current:
+            self.ui.comboGroups.setCurrentIndex(current)
 
 
     @pyqtSlot()
@@ -421,6 +443,8 @@ class MainWindow(QMainWindow):
         if(w.exec() == QDialog.Accepted):
             pass
 
+        self.on_btnRefreshList_clicked()
+
 
     @pyqtSlot()
     def on_btnQv2rayBalancer_clicked(self):
@@ -431,4 +455,5 @@ class MainWindow(QMainWindow):
         w = Qv2rayBalancerForm(self)
         if(w.exec() == QDialog.Accepted):
             pass
-
+        
+        self.on_btnRefreshList_clicked()
