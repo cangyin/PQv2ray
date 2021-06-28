@@ -157,15 +157,10 @@ class SettingsForm(QDialog):
 
     @pyqtSlot()
     def on_btnSave_clicked(self):
-        # # tab 1
         self.config['ui'] = self.config_mgr_ui.as_dict()
-        # # tab 2
         self.config['qv2ray'] = self.config_mgr_qv2ray.as_dict()
-        # # tab 3
         self.config['v2ray'] = self.config_mgr_v2ray.as_dict()
-        # # tab 4
         self.config['multi_port'] = self.config_mgr_mp.as_dict()
-        # # tab 5
         self.config['balancer'] = self.config_mgr_bl.as_dict()
 
         self.accept()
