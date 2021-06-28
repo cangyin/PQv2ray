@@ -6,10 +6,11 @@ results/*
 OmegaOptions*
 
 *.spec
+log*.txt
 dist/
 build/
 
 venv/
 config.json
 
-screen demos/
+demos/
