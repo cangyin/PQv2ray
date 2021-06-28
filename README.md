@@ -28,3 +28,6 @@ pip install -r requirements.txt
 
 ## Pre-built Binaries
 just download from releases (Windows only).
+
+## Platform
+PQv2ray is only tested on Windows, currently. But it should work on Linux easily with no major bugs.
