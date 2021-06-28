@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.setWindowIcon(QIcon(':/app-icon.png'))
         # TODO promote config to global
         Node.set_default_format(g_config['ui']['node_repr_format'])
         
