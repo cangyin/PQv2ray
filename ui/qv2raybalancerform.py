@@ -49,12 +49,6 @@ class Qv2rayBalancerForm(QDialog):
 
         ui.listRouteTypes.addItems(self.route_type_mapping)
 
-        picked_groups = deduplicate([node.group for node in self.nodes])
-        if len(picked_groups) == 1:
-            ui.editAutoImportName.setText( f'负载均衡 - {picked_groups[0]} - {len(self.nodes)}' )
-        else:
-            ui.editAutoImportName.setText( f'负载均衡 - (多个分组) - {len(self.nodes)}' )
-
         inboundConfig = gen.qv2ray_conf.get('inboundConfig', {})
         ui.editListenIp.setText( inboundConfig.get('listenip', '127.0.0.1') )
 
@@ -71,6 +65,12 @@ class Qv2rayBalancerForm(QDialog):
         connectionConfig = gen.qv2ray_conf.get('defaultRouteConfig', {}).get('connectionConfig', {})
         ui.chkBypassLAN.setChecked( connectionConfig.get('bypassLAN', True) )
         ui.chkBypassCN.setChecked( connectionConfig.get('bypassCN', True) )
+
+        picked_groups = deduplicate([node.group for node in self.nodes])
+        if len(picked_groups) == 1:
+            ui.editAutoImportName.setText( f'负载均衡 - {picked_groups[0]} - {len(self.nodes)}' )
+        else:
+            ui.editAutoImportName.setText( f'负载均衡 - (多个分组) - {len(self.nodes)}' )
 
     @pyqtSlot(bool)
     def on_chkHttpPort_toggled(self, b):
@@ -98,10 +98,6 @@ class Qv2rayBalancerForm(QDialog):
             file_name = relative_path(file_name)
             ui.editQvExportedRouteSettings.setText(file_name)
 
-    @pyqtSlot(str)
-    def on_comboFallbackOutboundGroup_currentTextChanged(self, text):
-        self.ui.comboFallbackOutboundNode.setVisible(text not in self.special_group_mapping)
-
     @pyqtSlot(bool)
     def on_rbtnAutoImport_toggled(self, b):
         if b:
@@ -115,6 +111,10 @@ class Qv2rayBalancerForm(QDialog):
     @pyqtSlot(bool)
     def on_rbtnManualImport_toggled(self, b):
         self.ui.importSettingStack.setEnabled(not b)
+
+    @pyqtSlot(str)
+    def on_comboFallbackOutboundGroup_currentTextChanged(self, text):
+        self.ui.comboFallbackOutboundNode.setVisible(text not in self.special_group_mapping)
     
     @pyqtSlot()
     def on_btnCommit_clicked(self):
@@ -138,7 +138,7 @@ class Qv2rayBalancerForm(QDialog):
             # use Qv2ray current route settings
             route_settings = gen.qv2ray_conf.get('defaultRouteConfig', {}).get('routeConfig', {})
 
-        # route order
+        # order of route rules
         route_type_order = []
         for index in  range(len(self.route_type_mapping)):
             route_type = ui.listRouteTypes.item(index).text()

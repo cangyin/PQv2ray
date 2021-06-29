@@ -21,7 +21,7 @@ class ScratchWin(QMainWindow):
         self.ui = ui
         ui.setupUi(self)
         
-    def event(self, event: QtCore.QEvent) -> bool:
+    def event_(self, event: QtCore.QEvent) -> bool:
         try:
             print(type(event), QCursor.pos())
             w = QApplication.widgetAt(QCursor.pos())

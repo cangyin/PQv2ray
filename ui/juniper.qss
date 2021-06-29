@@ -22,7 +22,7 @@ QGroupBox::title {
     border-right: 2px solid #93c9cc; */
     color: #1b8c90;
 }
-#groupBoxBtns, #groupBoxBlockRules {
+#groupBoxBtns, #groupBoxRouteSettings {
     border: none;
 }
 QGroupBox#groupBoxHelp{
@@ -120,17 +120,11 @@ QPushButton::pressed{
 
 
 /* QTextEdit or QPlainTextEdit */
-#txtRulesBlockDomain, #txtRulesBlockIp,
-#txtRulesDomain, #txtRulesIp,
 #TextContentForm-plainTextEdit, #TextContentForm-textEdit {
     color: #787878;
     background-color: #1e1e1e;
     font-family: consolas;
     font-size: 8pt;
-}
-#txtRulesBlockDomain::disabled, #txtRulesBlockIp::disabled,
-#txtRulesDomain::disabled, #txtRulesIp::disabled {
-    background-color: #787878;
 }
 #TextContentForm-plainTextEdit, #TextContentForm-textEdit {
     font-family: monospace;

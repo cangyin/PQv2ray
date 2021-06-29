@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
-    <height>564</height>
+    <width>820</width>
+    <height>557</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -162,93 +162,14 @@
       <property name="verticalSpacing">
        <number>16</number>
       </property>
-      <item row="1" column="0">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="topMargin">
-         <number>8</number>
-        </property>
-        <item>
-         <widget class="QCheckBox" name="chkBypassCN">
-          <property name="text">
-           <string>绕过大陆</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="chkBypassLAN">
-          <property name="text">
-           <string>绕过私有地址</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="0" column="0">
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QRadioButton" name="rbtnNoRouteSettings">
-          <property name="text">
-           <string>空</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="rbtnUseQvRouteSettings">
-          <property name="text">
-           <string>使用Qv2ray全局路由</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QRadioButton" name="rbtnImportQvRouteSettings">
-          <property name="text">
-           <string>使用Qv2ray导出的路由方案</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="widgetQvExportedRouteBrwsPane" native="true">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>8</number>
-           </property>
-           <item>
-            <widget class="QLineEdit" name="editQvExportedRouteSettings"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="btnBrwsQvExportedRouteSettings">
-             <property name="text">
-              <string>浏览</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="3" column="0" colspan="2">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
        <layout class="QHBoxLayout" name="horizontalLayout_6">
         <property name="spacing">
          <number>2</number>
@@ -355,17 +276,96 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="Line" name="line">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+      <item row="1" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="topMargin">
+         <number>0</number>
         </property>
-       </widget>
+        <item>
+         <widget class="QCheckBox" name="chkBypassCN">
+          <property name="text">
+           <string>绕过大陆</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="chkBypassLAN">
+          <property name="text">
+           <string>绕过私有地址</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="1" rowspan="2">
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QRadioButton" name="rbtnNoRouteSettings">
+          <property name="text">
+           <string>空</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbtnUseQvRouteSettings">
+          <property name="text">
+           <string>使用Qv2ray全局路由</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbtnImportQvRouteSettings">
+          <property name="text">
+           <string>使用Qv2ray导出的路由方案</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="widgetQvExportedRouteBrwsPane" native="true">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>8</number>
+           </property>
+           <item>
+            <widget class="QLineEdit" name="editQvExportedRouteSettings"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnBrwsQvExportedRouteSettings">
+             <property name="text">
+              <string>浏览</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="1" rowspan="3">
        <widget class="QGroupBox" name="groupBoxRouteTypeOrder">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>

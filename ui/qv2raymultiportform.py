@@ -15,22 +15,34 @@ class Qv2rayMultiPortForm(QDialog):
         self.nodes = parent.getUserPickedNodes()
         self.group_names = parent.group_names
 
+        self.route_type_mapping = {
+            '阻断': gen.outbound_block_tag,
+            '代理': gen.outbound_proxy_tag,
+            '直连': gen.outbound_direct_tag,
+        }
+        # mapping from special groups to nodes
+        self.special_group_mapping = {
+            '阻断': [ gen.block_node ],
+            '直连': [ gen.direct_node ]
+        }
+
         self.ui = Ui_Qv2rayMultiPortForm()
         self.ui.setupUi(self)
         ui = self.ui
-
-        self.block_rule_schemes = ['（无）', '（自定义）', '使用 Qv2ray 阻断规则']
-        self.route_schemes = ['（空白）', '（自定义）', '直连', '代理', '阻断']
         
         ui.spinPortStart.setValue(self.config['default_port_start'])
-        ui.comboBlockRuleScheme.addItems(self.block_rule_schemes)
-        ui.comboRouteScheme.addItems(self.route_schemes)
 
         ui.comboUpdateNodeName.link_comboBox(ui.comboUpdateNodeGroup)
         ui.comboUpdateNodeName.set_selector(lambda node: node.is_qv2ray_complex_node())
         ui.comboUpdateNodeGroup.addItems(self.group_names)
 
         ui.comboAutoImportGroup.addItems(self.group_names)
+
+        ui.listRouteTypes.addItems(self.route_type_mapping)
+
+        connectionConfig = gen.qv2ray_conf.get('defaultRouteConfig', {}).get('connectionConfig', {})
+        ui.chkBypassLAN.setChecked( connectionConfig.get('bypassLAN', True) )
+        ui.chkBypassCN.setChecked( connectionConfig.get('bypassCN', True) )
 
         picked_groups = deduplicate([node.group for node in self.nodes])
         if len(picked_groups) == 1:
@@ -107,6 +119,38 @@ class Qv2rayMultiPortForm(QDialog):
         return super().event(a0)
 
     @pyqtSlot(bool)
+    def on_rbtnNoRouteSettings_toggled(self, b):
+        self.ui.groupBoxRouteTypeOrder.setEnabled(not b)
+
+    @pyqtSlot(bool)
+    def on_rbtnImportQvRouteSettings_toggled(self, b):
+        self.ui.widgetQvExportedRouteBrwsPane.setEnabled(b)
+        if b and not self.ui.editQvExportedRouteSettings.text():
+            self.on_btnBrwsQvExportedRouteSettings_clicked()
+
+    @pyqtSlot()
+    def on_btnBrwsQvExportedRouteSettings_clicked(self):
+        ui = self.ui
+        file_name = QFileDialog.getOpenFileName(self, '选择由 Qv2ray 导出的路由方案', '.', '.JSON 文件 (*.json);; 任何文件 (*.*)')[0]
+        if file_name:
+            file_name = relative_path(file_name)
+            ui.editQvExportedRouteSettings.setText(file_name)
+
+    @pyqtSlot(bool)
+    def on_rbtnAutoImport_toggled(self, b):
+        if b:
+            self.ui.importSettingStack.setCurrentIndex(0)
+
+    @pyqtSlot(bool)
+    def on_rbtnUpdateNode_toggled(self, b):
+        if b:
+            self.ui.importSettingStack.setCurrentIndex(1)
+        
+    @pyqtSlot(bool)
+    def on_rbtnManualImport_toggled(self, b):
+        self.ui.importSettingStack.setEnabled(not b)
+
+    @pyqtSlot(bool)
     def on_groupBoxSw_toggled(self, b :bool):
         if b and not self.ui.editSwFile.text():
             self.on_btnBrowseSwFile_clicked()
@@ -118,54 +162,6 @@ class Qv2rayMultiPortForm(QDialog):
         if file_name:
             file_name = relative_path(file_name)
             ui.editSwFile.setText(file_name)
-
-    @pyqtSlot(int)
-    def on_comboBlockRuleScheme_currentIndexChanged(self, i):
-        ui = self.ui
-        blockRulesDomain = ''
-        blockRulesIp = ''
-        if i == 1: # custom rules
-            blockRulesDomain = dedent('''
-                示例：
-                geosite:category-ads-all
-                domain:ads.dummysite.com
-            ''')
-            blockRulesIp = dedent('''
-                示例：
-                192.168.1.0/24
-            ''')
-        elif i == 2: # rules from Qv2ray
-            rules = gen.qv2ray_conf['defaultRouteConfig']['routeConfig']
-            blockRulesDomain = '\n'.join( rules['domains'].get('block', []) )
-            blockRulesIp = '\n'.join( rules['ips'].get('block', []) )
-
-        ui.txtRulesBlockDomain.setPlainText(blockRulesDomain.strip())
-        ui.txtRulesBlockIp.setPlainText(blockRulesIp.strip())
-        ui.groupBoxBlockRules.setEnabled(i != 0)
-
-    @pyqtSlot(int)
-    def on_comboRouteScheme_currentIndexChanged(self, i):
-        ui = self.ui
-        rulesDomain = ''
-        rulesIp = ''
-        if i == 1: # custom rules
-            rulesDomain = dedent('''
-                示例：
-                geosite:geolocation-cn
-                domain:baidu.com
-            ''')
-            rulesIp = dedent('''
-                示例
-                117.131.104.7
-            ''')
-        elif i >= 2: # rules from Qv2ray
-            key = gen.outbound_classified_tags[i-2]
-            rules = gen.qv2ray_conf['defaultRouteConfig']['routeConfig']
-            rulesDomain = '\n'.join( rules['domains'].get(key, []) )
-            rulesIp = '\n'.join( rules['ips'].get(key, []) )
-            
-        ui.txtRulesDomain.setPlainText(rulesDomain.strip())
-        ui.txtRulesIp.setPlainText(rulesIp.strip())
 
     @pyqtSlot(int)
     def on_spinPortStart_valueChanged(self, value):
@@ -251,26 +247,34 @@ class Qv2rayMultiPortForm(QDialog):
 
     def generateQv2rayMultiPortConfig(self):
         ui = self.ui
-        route_rules = {
-            'domains': ui.txtRulesDomain.toPlainText().strip().splitlines(),
-            'ips': ui.txtRulesIp.toPlainText().strip().splitlines()
-        }
-        block_rules = {
-            'domains': ui.txtRulesBlockDomain.toPlainText().strip().splitlines(),
-            'ips': ui.txtRulesBlockIp.toPlainText().strip().splitlines()
-        }
         
-        if self.config['default_port_type'] == 'HTTP':
-            inbound_template = gen.inbound_http_template 
+        # route settings
+        if ui.rbtnNoRouteSettings.isChecked():
+            route_settings = {}
+        elif ui.rbtnImportQvRouteSettings.isChecked():
+            _file = ui.editQvExportedRouteSettings.text()
+            if path.exists(_file):
+                route_settings = load_json(_file)
+            else:
+                QMessageBox.warning(self, '路由设置文件不存在', f'无法打开文件 {_file}')
+                return
         else:
-            inbound_template = gen.inbound_socks_template 
+            route_settings = gen.qv2ray_conf.get('defaultRouteConfig', {}).get('routeConfig', {})
+
+        # order of route rules
+        route_type_order = []
+        for index in  range(len(self.route_type_mapping)):
+            route_type = ui.listRouteTypes.item(index).text()
+            route_type = self.route_type_mapping[route_type]
+            route_type_order.append(route_type)
         
         qv2ray_result = gen.generate_qv2ray_multi_port_config(
             nodes=self.nodes,
             ports=self.ports,
-            inbound_template=inbound_template,
-            route_rules=route_rules,
-            block_rules=block_rules,
+            route_settings=route_settings, # route_rules
+            route_type_order=route_type_order,
+            bypassCN=ui.chkBypassCN.isChecked(),
+            bypassLAN=ui.chkBypassLAN.isChecked()
         )
         
         # always write result to file
