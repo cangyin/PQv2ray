@@ -5,6 +5,7 @@
 
 ## Examples
 
+### Balancers
 - most basic balancer
 ![most basic balancer](demos/screenshots/most%20basic%20balancer.png)
 
@@ -18,8 +19,16 @@
 ![balancer with complete Qv2ray route settings](demos/screenshots/balancer%20(with%20complete%20Qv2ray%20route%20settings).png)
 
 
+### Multi-Ports
 - most basic multi-port
 ![most basic multi-port](demos/screenshots/most%20basic%20multi-port.png)
+
+- multiple balancers with complete Qv2ray route settings
+![multiple balancers with complete Qv2ray route settings](demos/screenshots/multiple%20balancer%20with%20complete%20Qv2ray%20route%20settings.png)
+
+- 56 SOCKS5 inbounds and 56 outbounds
+![56 SOCKS5 inbounds and 56 outbounds](demos/screenshots/56%20SOCKS5%20inbounds%20and%2056%20outbounds.png)
+
 
 ## Installation
 ```cmd
