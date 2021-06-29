@@ -3,6 +3,10 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/cangyin/PQv2ray/pack%20python%20script?logo=GitHub&style=flat-square)
 ![GitHub all releases](https://img.shields.io/github/downloads/cangyin/PQv2ray/total?style=flat-square)
 
+## Development Purpose of the Tool
+
+Help users get started with Qv2ray's complex configuration more easily.
+
 ## Examples
 
 ### Balancers
