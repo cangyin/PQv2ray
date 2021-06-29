@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Qv2rayBalancerForm(object):
     def setupUi(self, Qv2rayBalancerForm):
         Qv2rayBalancerForm.setObjectName("Qv2rayBalancerForm")
-        Qv2rayBalancerForm.resize(820, 557)
+        Qv2rayBalancerForm.resize(871, 557)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
