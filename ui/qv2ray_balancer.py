@@ -207,6 +207,7 @@ class Ui_Qv2rayBalancerForm(object):
         self.gridLayout_3.addWidget(self.groupBoxRouteTypeOrder, 0, 1, 3, 1)
         self.gridLayout_2.addWidget(self.groupBox_2, 1, 0, 1, 1)
         self.btnCommit = QtWidgets.QPushButton(Qv2rayBalancerForm)
+        self.btnCommit.setMinimumSize(QtCore.QSize(0, 50))
         self.btnCommit.setObjectName("btnCommit")
         self.gridLayout_2.addWidget(self.btnCommit, 2, 1, 1, 1)
         self.groupBoxImport = QtWidgets.QGroupBox(Qv2rayBalancerForm)

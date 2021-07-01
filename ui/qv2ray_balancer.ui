@@ -438,6 +438,12 @@
    </item>
    <item row="2" column="1">
     <widget class="QPushButton" name="btnCommit">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>50</height>
+      </size>
+     </property>
      <property name="text">
       <string>确认生成</string>
      </property>

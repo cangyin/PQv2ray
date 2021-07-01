@@ -20,6 +20,7 @@ class Ui_Qv2rayMultiPortForm(object):
         self.gridLayout_4.setVerticalSpacing(20)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.btnCommit = QtWidgets.QPushButton(Qv2rayMultiPortForm)
+        self.btnCommit.setMinimumSize(QtCore.QSize(0, 50))
         self.btnCommit.setObjectName("btnCommit")
         self.gridLayout_4.addWidget(self.btnCommit, 3, 1, 1, 1)
         self.groupBoxHelp = QtWidgets.QGroupBox(Qv2rayMultiPortForm)
