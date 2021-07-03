@@ -105,17 +105,16 @@ def format_repr(repr_str, d :dict) -> str:
             result = result.replace('{' + k + '}', str(v))
     return result
 
-def _format_json_obj(repr_obj, d):
-    if isinstance(repr_obj, list):
-        return [_format_json_obj(o, d) for o in repr_obj]
-    elif isinstance(repr_obj, dict):
-        return {format_repr(k, d): _format_json_obj(v, d) for k, v in repr_obj.items()}
-    elif isinstance(repr_obj, str):
-        return format_repr(repr_obj, d)
-    else:
-        return repr_obj
-
 def format_json_obj(repr_obj, d):
+    def _format_json_obj(repr_obj, d):
+        if isinstance(repr_obj, list):
+            return [_format_json_obj(o, d) for o in repr_obj]
+        elif isinstance(repr_obj, dict):
+            return {format_repr(k, d): _format_json_obj(v, d) for k, v in repr_obj.items()}
+        elif isinstance(repr_obj, str):
+            return format_repr(repr_obj, d)
+        else:
+            return repr_obj
     return _format_json_obj(deepcopy(repr_obj), d)
 
 def deduplicate(l, key=None):
@@ -136,7 +135,7 @@ def deduplicate(l, key=None):
         else:
             return l
 
-def has_duplication(l, key=None) -> bool:
+def has_duplicates(l, key=None) -> bool:
     return len(deduplicate(l), key) != len(l)
 
 def process_exists(name :str):
