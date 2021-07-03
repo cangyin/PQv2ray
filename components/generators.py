@@ -122,9 +122,9 @@ def generate_qv2ray_multi_port_config(
         _inbound_tags.append( format_repr(inbound_tag_format, d) )
         _outbound_tags.append( format_repr(outbound_tag_format, d) )
 
-    if len(deduplicate(_inbound_tags)) < len(_inbound_tags):
+    if has_duplicates(_inbound_tags):
         inbound_tag_format += ' ({node.id})'
-    if len(deduplicate(_outbound_tags)) < len(_outbound_tags):
+    if has_duplicates(_outbound_tags):
         outbound_tag_format += ' ({node.id})'
 
     # inbound protocol
@@ -200,7 +200,7 @@ def generate_qv2ray_multi_port_config(
                 rule["balancerTag"] = balancerTag
         rules_proxy.extend(node_specific_rules)
 
-    ## 'bypass' rules
+    # 'bypass' rules
     rules_bypassCN = []
     rules_bypassLAN = []
 
@@ -223,12 +223,11 @@ def generate_qv2ray_multi_port_config(
     # gather all rules
     rules = rules_bypassLAN + rules_bypassCN
     for route_type in route_type_order:
-        if route_type == outbound_direct_tag:
-            rules += rules_direct
-        elif route_type == outbound_proxy_tag:
-            rules += rules_proxy
-        elif route_type == outbound_block_tag:
-            rules += rules_block
+        rules += {
+            outbound_direct_tag: rules_direct,
+            outbound_block_tag: rules_block,
+            outbound_proxy_tag: rules_proxy
+        }[route_type]
 
     # TODO what if the outbound is not a reference ? 
     outbounds = deduplicate(outbounds, key=lambda d: d.get('QV2RAY_OUTBOUND_METADATA', {}).get('connectionId', get_random_node_id()))
@@ -285,18 +284,16 @@ def generate_qv2ray_balancer_config(
         d = get_repr_mapping(node)
         _outbound_tags.append( format_repr(outbound_tag_format, d) )
 
-    if len(deduplicate(_outbound_tags)) < len(_outbound_tags):
+    if has_duplicates(_outbound_tags):
         outbound_tag_format += ' ({node.id})'
 
     ## inbounds
     inbounds = []
-    inbound_tags = [] # for later use
     for porttype, template in (('http', inbound_http_template), ('socks', inbound_socks_template)):
         if ports.get(porttype):
             inbound = deepcopy(template)
             inbound['listen'] = listenIp
             inbound['port'] = ports[porttype]
-            inbound_tags.append(inbound['tag'])
             inbounds.append(inbound)
 
     ## outbounds, balancer selector
@@ -320,53 +317,46 @@ def generate_qv2ray_balancer_config(
 
     ## route rules
     rules = []
-    rule_common = {
-        "QV2RAY_RULE_ENABLED": True,
-        "QV2RAY_RULE_TAG": "",
-        "type": "field",
-        "inboundTag": inbound_tags,
-    }
-    empty = True
-    for route_type in route_type_order:
-        for domain_or_ip in ('ip', 'domain'):
-            domains_or_ips = route_settings.get(domain_or_ip + 's', {}).get(route_type, [])
-            if not domains_or_ips:
-                continue
 
-            rule = deepcopy(rule_common)
-            rule.update({
-                "QV2RAY_RULE_TAG": f"{route_type}-{domain_or_ip}",
-                domain_or_ip: domains_or_ips
-            })
-            if route_type == outbound_proxy_tag:
-                rule["balancerTag"] = balancerTag
-            else:
-                rule["outboundTag"] = route_type
-            rules.append(rule)
-            empty = False
-    if empty:
-        rule = deepcopy(rule_common)
-        rule.update({
-            "balancerTag": balancerTag,
-            "QV2RAY_RULE_TAG": 'rule',
-        })
-        rules.append(rule)
+    rules_proxy =_rules_from_route_settings(route_settings, outbound_proxy_tag, outbound_proxy_tag)
+    if len(rules_proxy) == 0:
+        rules_proxy.append(deepcopy(rule_common))
+    
+    rules_block =_rules_from_route_settings(route_settings, outbound_block_tag, outbound_block_tag)
+    rules_direct =_rules_from_route_settings(route_settings, outbound_direct_tag, outbound_direct_tag)
 
-    ## 'bypass' rules
+    for rule in rules_proxy:
+        rule["balancerTag"] = balancerTag
+    for rule in rules_block:
+        rule['outboundTag'] = outbound_block_tag
+    for rule in rules_direct:
+        rule['outboundTag'] = outbound_direct_tag
+
+    # 'bypass' rulesbypassCN
+    rules_bypassCN = []
+    rules_bypassLAN = []
+
     if bypassCN:
         rules_bypassCN = load_json(g_config["v2ray_object_templates"]['rules_bypassCN'])
         rules_bypassCN = format_json_obj(rules_bypassCN, globals())
-        rules = rules + rules_bypassCN
 
     if bypassLAN:
         rules_bypassLAN = load_json(g_config["v2ray_object_templates"]['rules_bypassLAN'])
         rules_bypassLAN = format_json_obj(rules_bypassLAN, globals())
-        rules = rules_bypassLAN + rules
 
-    # we need to supply the special outbounds
-    if route_settings.get('ips', {}).get('block') or route_settings.get('domains', {}).get('block'):
+    # gather all rules
+    rules = rules_bypassLAN + rules_bypassCN
+    
+    for route_type in route_type_order:
+        rules += {
+            outbound_direct_tag: rules_direct,
+            outbound_block_tag: rules_block,
+            outbound_proxy_tag: rules_proxy
+        }[route_type]
+
+    if rules_block:
         outbounds.append(block_node.profile)
-    if bypassCN or bypassLAN or route_settings.get('ips', {}).get('direct') or route_settings.get('domains', {}).get('direct'):
+    if rules_direct or bypassCN or bypassLAN:
         outbounds.append(direct_node.profile)
 
     result = {
