@@ -289,12 +289,14 @@ def generate_qv2ray_balancer_config(
 
     ## inbounds
     inbounds = []
+    inbound_tags = []
     for porttype, template in (('http', inbound_http_template), ('socks', inbound_socks_template)):
         if ports.get(porttype):
             inbound = deepcopy(template)
             inbound['listen'] = listenIp
             inbound['port'] = ports[porttype]
             inbounds.append(inbound)
+            inbound_tags.append(inbound['tag'])
 
     ## outbounds, balancer selector
     outbounds = []
@@ -327,6 +329,7 @@ def generate_qv2ray_balancer_config(
 
     for rule in rules_proxy:
         rule["balancerTag"] = balancerTag
+        rule["inboundTag"] = inbound_tags
     for rule in rules_block:
         rule['outboundTag'] = outbound_block_tag
     for rule in rules_direct:
