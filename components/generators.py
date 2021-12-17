@@ -190,7 +190,11 @@ def generate_qv2ray_multi_port_config(
         node_specific_rules = _rules_from_route_settings(route_settings, outbound_proxy_tag, format_repr(rule_tag_format, d))
 
         if len(node_specific_rules) == 0:
-            node_specific_rules.append(deepcopy(rule_common))
+            rule = deepcopy(rule_common)
+            rule.update({
+                "QV2RAY_RULE_TAG": format_repr(rule_tag_format, d)
+            })
+            node_specific_rules.append(rule)
 
         for rule in node_specific_rules:
             rule['inboundTag'] = [inboundTag]

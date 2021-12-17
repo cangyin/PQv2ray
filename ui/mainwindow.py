@@ -376,7 +376,6 @@ class MainWindow(QMainWindow):
             # invalid regular expression
             r = re.escape(r)
             ui.editFilter.setStyleSheet('color: #1e1e1e;')
-            return
             
         if r.lower() == r: # case insensitive
             self.node_selector = lambda node : re.search(r, repr(node).lower()) != None
