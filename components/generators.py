@@ -326,7 +326,11 @@ def generate_qv2ray_balancer_config(
 
     rules_proxy =_rules_from_route_settings(route_settings, outbound_proxy_tag, outbound_proxy_tag)
     if len(rules_proxy) == 0:
-        rules_proxy.append(deepcopy(rule_common))
+        rule = deepcopy(rule_common)
+        rule.update({
+            "QV2RAY_RULE_TAG": outbound_proxy_tag
+        })
+        rules_proxy.append(rule)
     
     rules_block =_rules_from_route_settings(route_settings, outbound_block_tag, outbound_block_tag)
     rules_direct =_rules_from_route_settings(route_settings, outbound_direct_tag, outbound_direct_tag)
