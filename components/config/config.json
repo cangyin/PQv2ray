@@ -21,7 +21,7 @@
     "v2ray": {
         "domainMatcher": "mph",
         "balancer_strategy": "leastPing",
-        "selector_use_prefixes": true,
+        "selector_use_prefixes": false,
         "domainStrategy": "AsIs"
     },
     "multi_port": {
